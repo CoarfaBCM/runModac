@@ -1,31 +1,31 @@
 # runModac
 
 ## To-Do
-- [] 1. Have unified input file with separate sheets for each method and only sample names, no group names needed here
-- [] 2. Plot ISTDs
-- [] 3. Normalize each method by ISTD or IQR
-- [] 4. Merge methods to make a combined normalized dataset
-- [] 5.	Plot QCs
-- [] 6.	Drop QCs from normalized dataset
-- [] 7. Save excel file with normalized data
-- [] 8.	Extract comparisons and settings from a separate excel file with a separate sheet for the settings and then separate sheets for each comparison containing
-    - [] a.	Comparison – A_over_B
-    - [] b.	Statistical test – t-test or ANOVA
-    - [] c.	Group order – B, A
-    - [] d.	Group and sample names
-        - [] i.	This helps define new groups when there are overlapping groups in comparisons
-- [] 9. Perform statistical tests for each comparison and save
-    - [] a. t-test reports with
-        - [] i. LogFoldChange
-        - [] ii. LinearFoldChange
-        - [] iii. p-value
-        - [] iv. FDR
-    - [] b. ANOVA reports with
-        - [] i. p-value
-        - [] ii. FDR
-    - [] c. Boxplots of each feature for each comparison
-    - [] d. Heatmaps for each comparison of
-        - [] i. All features
-        - [] ii. Only significant features passing FDR threshold
-    - [] e. Excel files containing underlying data used to generate heatmaps
-- [] 10. Generate pptx report summarizing results, similar to python pipeline
+-   [ ] 1. Have unified input file with separate sheets for each method and only sample names, no group names needed here
+-   [ ] 2. Plot ISTDs
+-   [ ] 3. Normalize each method by ISTD or IQR
+-   [ ] 4. Merge methods to make a combined normalized dataset
+-   [ ] 5.	Plot QCs
+-   [ ] 6.	Drop QCs from normalized dataset
+-   [ ] 7. Save excel file with normalized data
+-   [ ] 8.	Extract comparisons and settings from a separate excel file with a separate sheet for the settings and then separate sheets for each comparison containing
+    -   [ ] a.	Comparison – A_over_B
+    -   [ ] b.	Statistical test – t-test or ANOVA
+    -   [ ] c.	Group order – B, A
+    -   [ ] d.	Group and sample names
+        -   [ ] i.	This helps define new groups when there are overlapping groups in comparisons
+-   [ ] 9. Perform statistical tests for each comparison and save
+    -   [ ] a. t-test reports with
+        -   [ ] i. LogFoldChange
+        -   [ ] ii. LinearFoldChange
+        -   [ ] iii. p-value
+        -   [ ] iv. FDR
+    -   [ ] b. ANOVA reports with
+        -   [ ] i. p-value
+        -   [ ] ii. FDR
+    -   [ ] c. Boxplots of each feature for each comparison
+    -   [ ] d. Heatmaps for each comparison of
+        -   [ ] i. All features
+        -   [ ] ii. Only significant features passing FDR threshold
+    -   [ ] e. Excel files containing underlying data used to generate heatmaps
+-   [ ] 10. Generate pptx report summarizing results, similar to python pipeline
