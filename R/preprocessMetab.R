@@ -1,10 +1,14 @@
-preprocessMetab <- function(inputFile, comparisonsFile, normalization, log2tr, outdir) {
-  all.methods <- excel_sheets(inputFile)
-  settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 6, col_names = F), row.names = 1, check.rows = F)
+preprocessMetab <- function(inputFile, comparisonsFile, outdir) {
   
-  all.exprs <- list()
+  all.methods <- excel_sheets(inputFile)
+  settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F)
+  normalization <- settings["normalization",1]
+  log2tr <- as.logical(settings["log2transform",1])
+  
+  all.exprs.norm <- list()
+  all.exprs.raw <- list()
   for (i in seq_along(all.methods)) {
-    
+    browser()
     mymethod <- all.methods[i]
     
     # reading in expression data per method
@@ -13,10 +17,7 @@ preprocessMetab <- function(inputFile, comparisonsFile, normalization, log2tr, o
     # saving qc row start idx
     qc.idx <- as.numeric(settings["QC_row",1])
     
-    # function for creating folders
-    createDir <- function(folder) {
-      if (!dir.exists(paste(folder))){dir.create(paste(folder), recursive = TRUE)}       
-    }
+    all.exprs.raw[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),]
     
     # Creating output dir for QA plots
     myoutdir <- paste(outdir,"QA_plots",sep = "/")
@@ -25,7 +26,6 @@ preprocessMetab <- function(inputFile, comparisonsFile, normalization, log2tr, o
     if (normalization == "istd") {
       source("R/normISTD.R")
       inputdf <- normISTD(inputdf = inputdf,
-                          qc.idx = qc.idx,
                           comparisonsFile = comparisonsFile,
                           myoutdir = myoutdir,
                           mymethod = mymethod)
@@ -49,16 +49,29 @@ preprocessMetab <- function(inputFile, comparisonsFile, normalization, log2tr, o
             labs(title = paste0(mymethod, " liver control distribution"), x = 'Compounds', y = 'Liver control'))
     dev.off()
     
-    all.exprs[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),] #dropping QC samples
+    all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),] #dropping QC samples
   }
   
   # merging all methods
-  exprsdf <- Reduce(function(dtf1, dtf2) {
+  exprsdf.raw <- Reduce(function(dtf1, dtf2) {
     ans <- merge(dtf1, dtf2, by = "row.names", all.x = TRUE)
     row.names(ans) <- ans[,"Row.names"]
     ans[,!names(ans) %in% "Row.names"]
   },
-  all.exprs)
+  all.exprs.raw)
   
-  return(exprsdf)
+  exprsdf.norm <- Reduce(function(dtf1, dtf2) {
+    ans <- merge(dtf1, dtf2, by = "row.names", all.x = TRUE)
+    row.names(ans) <- ans[,"Row.names"]
+    ans[,!names(ans) %in% "Row.names"]
+  },
+  all.exprs.norm)
+  
+  myoutdir <- paste(outdir,"report",sep = "/")
+  createDir(myoutdir)
+  
+  write.xlsx(exprsdf.raw, paste0(myoutdir,"/raw_data.xlsx"), overwrite = T, rowNames = T)
+  write.xlsx(exprsdf.norm, paste0(myoutdir,"/normalized_data.xlsx"), overwrite = T, rowNames = T)
+  
+  return(list(raw=exprsdf.raw, norm=exprsdf.norm))
 }
