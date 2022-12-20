@@ -8,7 +8,7 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir) {
   all.exprs.norm <- list()
   all.exprs.raw <- list()
   for (i in seq_along(all.methods)) {
-    browser()
+    
     mymethod <- all.methods[i]
     
     # reading in expression data per method
@@ -50,6 +50,18 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir) {
     dev.off()
     
     all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),] #dropping QC samples
+    
+    pdf(paste0(outdir,"/QA_plots/boxplot_",mymethod,".pdf"))
+    mar.def <- par()$mar
+    par(mar = mar.def + c(5,0,-3,0))
+    par(cex.axis=0.6)
+    boxplot(t(all.exprs.norm[[1]]),
+            ylab="Relative abundance",
+            main=paste0("Comparison of samples (",mymethod,")"),
+            las=2,
+            outline = T)
+    dev.off()
+    par(mar = mar.def)
   }
   
   # merging all methods
@@ -66,6 +78,18 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir) {
     ans[,!names(ans) %in% "Row.names"]
   },
   all.exprs.norm)
+  
+  pdf(paste0(outdir,"/QA_plots/boxplot_all_samples.pdf"))
+  mar.def <- par()$mar
+  par(mar = mar.def + c(5,0,-3,0))
+  par(cex.axis=0.6)
+  boxplot(t(exprsdf.norm),
+          ylab="Relative abundance",
+          main="Comparison of samples (all methods)",
+          las=2,
+          outline = T)
+  dev.off()
+  par(mar = mar.def)
   
   myoutdir <- paste(outdir,"report",sep = "/")
   createDir(myoutdir)
