@@ -15,25 +15,32 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
   # reading in all comparisons
   all.comparisons <- excel_sheets(comparisonsFile)[-1]
   
-  # PCA plot
-  ## read in groups
-  mygroups <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[1], skip = 3), row.names = 2, check.rows = F)
-  
-  source("R/plotPCA.R")
-  plotPCA(exprs = exprsdf[["raw"]], meta = mygroups, outdir = paste0(outdir, "/pca"), suffix = "_raw", transpose = T)
-  plotPCA(exprs = exprsdf[["norm"]], meta = mygroups, outdir = paste0(outdir, "/pca"), suffix = "_norm", transpose = T)
-  
   source("R/myStatTest.R")
+  source("R/plotPCA.R")
   for (i in seq_along(all.comparisons)) {
-    mycomparison <- all.comparisons[i]
-    settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F)
-    myttest(exprs = exprsdf[["norm"]],
-            meta = mygroups,
+    # readying inputs
+    all.info <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], n_max = 2, col_names = F), row.names = 1, check.rows = F)
+    mycomparison <- all.info[1,]
+    mytest <- all.info[2,]
+    
+    mygroups <- as.character(read_excel(comparisonsFile, trim_ws = T, sheet = i+1, skip = 2, n_max = 1, col_names = F))[-1]
+    mymeta <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], skip = 3), row.names = 2, check.rows = F)
+    mymeta <- mymeta[mymeta[,1] %in% mygroups, , drop = F]
+    myexprs.raw <- exprsdf[["raw"]][rownames(mymeta),]
+    myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),]
+    
+    # PCA plot
+    plotPCA(exprs = myexprs.raw, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_raw_",mycomparison), transpose = T)
+    plotPCA(exprs = myexprs.norm, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_norm_",mycomparison), transpose = T)
+    
+    # stat test
+    myStatTest(exprs = myexprs.norm,
+            meta = mymeta,
+            test = mytest,
             comparison = mycomparison,
             outdir = paste0(outdir, "/report/"))
+    
+    # heatmaps
+    settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F)
   }
 }
-
-runModac(inputFile = "scratch/input/input-A.xlsx",
-         comparisonsFile = "scratch/input/comparisons-A.xlsx",
-         outdir = "scratch/results-A")
