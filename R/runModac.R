@@ -1,22 +1,23 @@
 
-runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir = "results") {
+runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir = "results", scriptPath) {
   library(readxl)
   library(tidyr)
   library(ggplot2)
   library(openxlsx)
   
-  source("R/createDir.R")
-  source("R/preprocessMetab.R")
+  source(paste0(scriptPath,"createDir.R"))
+  source(paste0(scriptPath,"preprocessMetab.R"))
   
   exprsdf <- preprocessMetab(inputFile = inputFile,
                              comparisonsFile = comparisonsFile,
-                             outdir = outdir)
+                             outdir = outdir,
+                             scriptPath = scriptPath)
   
   # reading in all comparisons
   all.comparisons <- excel_sheets(comparisonsFile)[-1]
   
-  source("R/myStatTest.R")
-  source("R/plotPCA.R")
+  source(paste0(scriptPath,"myStatTest.R"))
+  source(paste0(scriptPath,"plotPCA.R"))
   for (i in seq_along(all.comparisons)) {
     # readying inputs
     all.info <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], n_max = 2, col_names = F), row.names = 1, check.rows = F)

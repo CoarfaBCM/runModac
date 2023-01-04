@@ -1,4 +1,4 @@
-preprocessMetab <- function(inputFile, comparisonsFile, outdir) {
+preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
   
   all.methods <- excel_sheets(inputFile)
   settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F)
@@ -24,7 +24,7 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir) {
     createDir(myoutdir)
     
     if (normalization == "istd") {
-      source("R/normISTD.R")
+      source(paste0(scriptPath,"normISTD.R"))
       inputdf <- normISTD(inputdf = inputdf,
                           comparisonsFile = comparisonsFile,
                           myoutdir = myoutdir,
