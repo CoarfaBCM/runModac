@@ -6,10 +6,10 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   log2tr <- as.logical(settings["log2transform",1])
   
   # saving qc row start idx
-  qc.idx <- as.numeric(settings["QC_row",1])
+  qc.idx <- as.numeric(settings["QC_row",1])-1
   
   # calculating CV
-  istd.idx <- istd.info[mymethod, "ISTD_column"]
+  istd.idx <- istd.info[mymethod, "ISTD_column"]-1
   
   if(ncol(inputdf) == istd.idx) {
     cv <- sd(inputdf[-c(qc.idx:nrow(inputdf)),istd.idx])/mean(inputdf[,istd.idx])

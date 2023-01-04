@@ -15,7 +15,7 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
     inputdf <- data.frame(read_excel(inputFile, trim_ws = T, sheet = mymethod), row.names = 1, check.rows = F, check.names = F)
     
     # saving qc row start idx
-    qc.idx <- as.numeric(settings["QC_row",1])
+    qc.idx <- as.numeric(settings["QC_row",1])-1
     
     all.exprs.raw[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),]
     
