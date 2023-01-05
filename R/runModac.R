@@ -43,5 +43,6 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
     
     # heatmaps
     settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F)
+    browser()
   }
 }
