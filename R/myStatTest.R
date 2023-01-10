@@ -9,6 +9,13 @@ myStatTest <- function(exprs, meta, test, comparison, outdir) {
     meta <- meta[match(rownames(exprs), rownames(meta)), , drop=F]
   }
   
+  # function for creating folders
+  createDir <- function(folder) {
+    if (!dir.exists(paste(folder))){dir.create(paste(folder), recursive = TRUE)}       
+  }
+  
+  createDir(outdir)
+  
   if (test == "t-test") {
     all.pvals <- apply(exprs, 2, function(x) {t.test(x~meta[,1])$p.value}) # ANOVA test across study sites for each chemical 
   } else if (test == "anova") {

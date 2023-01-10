@@ -1,8 +1,9 @@
 normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
-  istd.info <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", skip = 8), check.rows = F)
+  
+  istd.info <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", skip = 7), check.rows = F)
   rownames(istd.info) <- istd.info$tab
   istd.info <- istd.info[,-1, drop=F]
-  settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F)
+  settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 7, col_names = F), row.names = 1, check.rows = F)
   log2tr <- as.logical(settings["log2transform",1])
   
   # saving qc row start idx

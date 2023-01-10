@@ -42,6 +42,25 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
             outdir = paste0(outdir, "/report/"))
     
     # heatmaps
-    settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F)
+    settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 7, col_names = F), row.names = 1, check.rows = F)
+    source(paste0(scriptPath,"/plotHeatmap.R"))
+    plotHeatmap(exprs = myexprs.norm,
+                meta = mymeta,
+                test = mytest,
+                comparison = mycomparison,
+                outdir = paste0(outdir, "/heatmaps/"),
+                groupOrder = mygroups,
+                reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+                cutoffStat = settings["statistic_selector",1],
+                cutoff = settings["statistic_cutoff",1])
+    plotHeatmap(exprs = myexprs.norm,
+                meta = mymeta,
+                test = mytest,
+                comparison = mycomparison,
+                outdir = paste0(outdir, "/heatmaps/"),
+                groupOrder = mygroups,
+                reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+                cutoffStat = settings["statistic_selector",1],
+                cutoff = 1)
   }
 }
