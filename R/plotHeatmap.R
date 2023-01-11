@@ -35,7 +35,7 @@ plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, repor
     tempdf <- cbind(c("", "Metabolite", rownames(scaled_df)),rbind(meta[,1], colnames(scaled_df), scaled_df))
     names(tempdf) <- NULL
     write.csv(tempdf, paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".csv"), row.names	= F)
-    browser()
+    
     x<-abs(max(scaled_df))
     y<-abs(min(scaled_df))
     scale<-max(c(x,y))

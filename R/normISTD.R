@@ -27,12 +27,13 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
     stop(paste0("cv = ", cv, "< cv cuttoff = ", settings["cv_cutoff_internal_standard",1]))
   }
   
+  # log2 transform
+  if(log2tr){
+    inputdf <- log2(inputdf)
+  }
+  
   # plotting ISTD
   temp <- inputdf[,ncol(inputdf)]
-  
-  if(log2tr){
-    temp <- log2(temp)
-  }
   
   pdf(paste(myoutdir,paste0("dIS_dist_",mymethod,".pdf"),sep = "/"))
   plot(temp,

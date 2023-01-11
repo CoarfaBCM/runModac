@@ -37,11 +37,6 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
                          comparisonsFile = comparisonsFile)
     }
     
-    if (log2tr & normalization == "istd") {
-      # Log2 transformation
-      inputdf <- log2(inputdf) 
-    }
-    
     # Plotting liver QC samples
     temp <- pivot_longer(data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),])),cols = !feature, names_to = "sample")
     pdf(paste(myoutdir,paste0("liver_dist_",mymethod,".pdf"),sep = "/"))
