@@ -31,7 +31,13 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
                           mymethod = mymethod)
     }
     
-    if (log2tr) {
+    if (normalization == "iqr") {
+      source(paste0(scriptPath,"/normIQR.R"))
+      inputdf <- normIQR(inputdf = inputdf,
+                         comparisonsFile = comparisonsFile)
+    }
+    
+    if (log2tr & normalization == "istd") {
       # Log2 transformation
       inputdf <- log2(inputdf) 
     }
