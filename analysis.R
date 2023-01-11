@@ -13,3 +13,10 @@ runModac(inputFile = "example2-prenormalized/input/input.xlsx",
          type = "metabolomics",
          outdir = "example2-prenormalized/results",
          scriptPath = "~/Box Sync/runModac/R/")
+
+# example3-iqr
+runModac(inputFile = "example3-iqr/input/input.xlsx",
+         comparisonsFile = "example3-iqr/input/comparisons.xlsx",
+         type = "metabolomics",
+         outdir = "example3-iqr/results",
+         scriptPath = "~/Box Sync/runModac/R/")
