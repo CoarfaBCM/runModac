@@ -29,7 +29,7 @@ myStatTest <- function(exprs, meta, test, comparison, outdir) {
   write.csv(reportdf, paste0(outdir,"/Report_",test,"_",comparison,".csv"), row.names = F)
   
   fullreportdf <- rbind(c(NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
-  write.csv(reportdf, paste0(outdir,"/FullReport_",test,"_",comparison,".csv"), row.names = F)
+  write.csv(fullreportdf, paste0(outdir,"/FullReport_",test,"_",comparison,".csv"), row.names = F)
   
   mycolors <- c("red","blue","green","yellow","black","grey","orange","turqoise")
   
