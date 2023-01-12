@@ -56,7 +56,7 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
     mar.def <- par()$mar
     par(mar = mar.def + c(5,0,-3,0))
     par(cex.axis=0.6)
-    boxplot(t(all.exprs.norm[[1]]),
+    boxplot(t(all.exprs.norm[[i]]),
             ylab="Relative abundance",
             main=paste0("Comparison of samples (",mymethod,")"),
             las=2,
