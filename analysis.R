@@ -7,11 +7,11 @@ runModac(inputFile = "example1-metabolomics/input/input-A.xlsx",
          outdir = "example1-metabolomics/results-A",
          scriptPath = "~/Box Sync/runModac/R/")
 
-# example2-prenormalized
-runModac(inputFile = "example2-prenormalized/input/input.xlsx",
-         comparisonsFile = "example2-prenormalized/input/comparisons.xlsx",
+# example2-prenormalized-dummy
+runModac(inputFile = "example2-prenormalized-dummy/input/input.xlsx",
+         comparisonsFile = "example2-prenormalized-dummy/input/comparisons.xlsx",
          type = "metabolomics",
-         outdir = "example2-prenormalized/results",
+         outdir = "example2-prenormalized-dummy/results",
          scriptPath = "~/Box Sync/runModac/R/")
 
 # example3-iqr
@@ -19,4 +19,11 @@ runModac(inputFile = "example3-iqr/input/input.xlsx",
          comparisonsFile = "example3-iqr/input/comparisons.xlsx",
          type = "metabolomics",
          outdir = "example3-iqr/results",
+         scriptPath = "~/Box Sync/runModac/R/")
+
+# example4-prenormalized-nodummy
+runModac(inputFile = "example4-prenormalized-nodummy/input/input.xlsx",
+         comparisonsFile = "example4-prenormalized-nodummy/input/comparisons.xlsx",
+         type = "metabolomics",
+         outdir = "example4-prenormalized-nodummy/results",
          scriptPath = "~/Box Sync/runModac/R/")

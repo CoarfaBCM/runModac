@@ -8,10 +8,31 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
   source(paste0(scriptPath,"/createDir.R"))
   source(paste0(scriptPath,"/preprocessMetab.R"))
   
+  # Creating output dir for QA plots
+  myoutdir <- paste(outdir,"QA_plots",sep = "/")
+  createDir(myoutdir)
+  
+  # Creating output dir for report files
+  myoutdir <- paste(outdir,"report",sep = "/")
+  createDir(myoutdir)
+  
   exprsdf <- preprocessMetab(inputFile = inputFile,
                              comparisonsFile = comparisonsFile,
                              outdir = outdir,
                              scriptPath = scriptPath)
+  
+  # Boxplot of all samples
+  pdf(paste0(outdir,"/QA_plots/boxplot_all_samples.pdf"))
+  mar.def <- par()$mar
+  par(mar = mar.def + c(5,0,-3,0))
+  par(cex.axis=0.6)
+  boxplot(t(exprsdf[["norm"]]),
+          ylab="Relative abundance",
+          main="Comparison of samples (all methods)",
+          las=2,
+          outline = T)
+  dev.off()
+  par(mar = mar.def)
   
   # reading in all comparisons
   all.comparisons <- excel_sheets(comparisonsFile)[-1]

@@ -28,7 +28,7 @@ plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, repor
     sigFeatures <- read.csv(reportfile) %>% filter(pval < cutoff) %>% select(1)
   }
   if (nrow(sigFeatures) == 0) {
-    return(cat("No significant features at ", cutoffStat, " < ", cutoff))
+    cat("No significant features at ", cutoffStat, " < ", cutoff)
   } else {
     scaled_df <- as.data.frame(t(scale(t(exprdf[sigFeatures[,1],]))))
     
