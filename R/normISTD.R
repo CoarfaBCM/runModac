@@ -24,16 +24,15 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   
   # checking if cv meets user specified cv cutoff
   if(cv > settings["cv_cutoff_internal_standard",1]) {
-    stop(paste0("cv = ", cv, "< cv cuttoff = ", settings["cv_cutoff_internal_standard",1]))
-  }
-  
-  # log2 transform
-  if(log2tr){
-    inputdf <- log2(inputdf)
+    stop(paste0("cv = ", cv, "> cv cuttoff = ", settings["cv_cutoff_internal_standard",1]))
   }
   
   # plotting ISTD
   temp <- inputdf[,ncol(inputdf)]
+  
+  if(log2tr) {
+    temp <- log2(temp)
+  }
   
   pdf(paste(myoutdir,paste0("dIS_dist_",mymethod,".pdf"),sep = "/"))
   plot(temp,
@@ -49,6 +48,11 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   
   # ISTD normalization
   inputdf[1:(ncol(inputdf)-1)] <- apply(inputdf[1:(ncol(inputdf)-1)], 2, function(x){x/inputdf[,ncol(inputdf)]})
+  
+  # log2 transform
+  if(log2tr){
+    inputdf <- log2(inputdf)
+  }
   
   # dropping istd
   inputdf <- inputdf[,-ncol(inputdf)]
