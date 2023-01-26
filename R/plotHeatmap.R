@@ -45,7 +45,7 @@ plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, repor
     scale<-max(c(x,y))
     # scale <- 4
     col_heatmap <- colorRamp2(c((-scale)*.75, 0,(scale)*.75), c("BLUE2", "black", "yellow"))
-    browser()
+    
     # ht <- Heatmap(matrix = scaled_df,
     #               col=col_heatmap,
     #               name = "z-score",
