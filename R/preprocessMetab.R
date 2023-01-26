@@ -1,7 +1,7 @@
 preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
   
   all.methods <- excel_sheets(inputFile)
-  settings <- data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 7, col_names = F), row.names = 1, check.rows = F)
+  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 7, col_names = F), row.names = 1, check.rows = F))
   normalization <- settings["normalization",1]
   log2tr <- as.logical(settings["log2transform",1])
   
@@ -13,7 +13,7 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
     myoutdir <- paste(outdir,"QA_plots",sep = "/")
     
     # reading in expression data per method
-    inputdf <- data.frame(read_excel(inputFile, trim_ws = T, sheet = mymethod), row.names = 1, check.rows = F, check.names = F)
+    inputdf <- suppressMessages(data.frame(read_excel(inputFile, trim_ws = T, sheet = mymethod), row.names = 1, check.rows = F, check.names = F))
     
     if (normalization == "none") {
       # log2 transform

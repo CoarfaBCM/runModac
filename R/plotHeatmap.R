@@ -1,6 +1,7 @@
 library(dplyr)
 library(circlize)
 library(ComplexHeatmap)
+library(RColorBrewer)
 
 plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, reportfile, cutoffStat = "fdr", cutoff = 0.25) {
   
@@ -12,6 +13,9 @@ plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, repor
     meta <- read.csv(meta, row.names = 1, check.names = F)
     meta <- meta[match(rownames(exprs), rownames(meta)), , drop=F]
   }
+  
+  meta <- meta[order(match(meta$group, groupOrder)), , drop=F]
+  exprs <- exprs[match(rownames(meta), rownames(exprs)),]
   
   # function for creating folders
   createDir <- function(folder) {
@@ -41,23 +45,49 @@ plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, repor
     scale<-max(c(x,y))
     # scale <- 4
     col_heatmap <- colorRamp2(c((-scale)*.75, 0,(scale)*.75), c("BLUE2", "black", "yellow"))
+    browser()
+    # ht <- Heatmap(matrix = scaled_df,
+    #               col=col_heatmap,
+    #               name = "z-score",
+    #               rect_gp = gpar(col = NA, lty = 1, lwd = 1),
+    #               cluster_rows = T,
+    #               row_names_gp = gpar(fontsize=5),
+    #               cluster_columns = F,
+    #               column_split = mygrouping,
+    #               column_title = NULL,
+    #               top_annotation = HeatmapAnnotation(Group = anno_block(gp = gpar(fill=c("red","steelblue","green", "orange", "pink","aquamarine","purple","grey","black","maroon","khaki")),
+    #                                                                     labels = levels(mygrouping),
+    #                                                                     labels_gp = gpar(font=2, fontsize=7))),
+    #               show_column_names = F,
+    #               border = T,
+    #               show_heatmap_legend = T,
+    #               heatmap_legend_param = list(legend_direction = "horizontal", title_position = "lefttop"))
+    # 
+    # pdf(paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".pdf"), height = 14, width = 10)
+    # draw(ht, heatmap_legend_side="bottom")
+    # dev.off()
     
-    ht <- Heatmap(matrix = scaled_df,
-                  col=col_heatmap,
-                  name = "z-score",
-                  rect_gp = gpar(col = NA, lty = 1, lwd = 1),
-                  cluster_rows = T,
-                  row_names_gp = gpar(fontsize=5),
-                  cluster_columns = F,
-                  column_split = mygrouping,
-                  column_title = NULL,
-                  top_annotation = HeatmapAnnotation(Group = anno_block(gp = gpar(fill=c("red","steelblue","green", "orange", "pink","aquamarine","purple","grey","black","maroon","khaki")),
-                                                                        labels = levels(mygrouping),
-                                                                        labels_gp = gpar(font=2, fontsize=7))),
-                  show_column_names = F,
-                  border = T,
-                  show_heatmap_legend = T,
-                  heatmap_legend_param = list(legend_direction = "horizontal", title_position = "lefttop"))
+    colors_set <- c("red","steelblue","green", "orange", "pink","aquamarine","purple","grey","black","khaki","maroon","yellow")
+    col_list <- list(sample=colors_set[seq_along(groupOrder)])
+    names(col_list$sample) <- groupOrder
+    
+    ha1 <- HeatmapAnnotation(df = meta, show_annotation_name = T, annotation_height = .25,
+                            col = col_list)
+    
+    ht<-Heatmap(matrix = scaled_df,
+                top_annotation = ha1,
+                clustering_distance_rows = "euclidean",
+                name = "z-score",
+                column_names_side = "bottom",
+                col=col_heatmap,
+                cluster_columns = F,
+                cluster_rows = T,
+                row_names_gp = gpar(fontsize=5),
+                rect_gp = gpar(col = NA, lty = 1, lwd = 1),
+                column_names_gp = gpar(fontsize=5),
+                show_row_dend = T,
+                km=1,
+                heatmap_legend_param = list(legend_direction = "horizontal",legend_width = unit(1, "in")))
     
     pdf(paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".pdf"), height = 14, width = 10)
     draw(ht, heatmap_legend_side="bottom")
