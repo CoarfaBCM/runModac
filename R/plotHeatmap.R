@@ -68,8 +68,8 @@ plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, repor
     # dev.off()
     
     colors_set <- c("red","steelblue","green", "orange", "pink","aquamarine","purple","grey","black","khaki","maroon","yellow")
-    col_list <- list(sample=colors_set[seq_along(groupOrder)])
-    names(col_list$sample) <- groupOrder
+    col_list <- list(group=colors_set[seq_along(groupOrder)])
+    names(col_list$group) <- groupOrder
     
     ha1 <- HeatmapAnnotation(df = meta, show_annotation_name = T, annotation_height = .25,
                             col = col_list)
