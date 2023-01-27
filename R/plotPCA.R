@@ -1,5 +1,5 @@
 plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, transpose = F) {
-  browser()
+  
   library(ggfortify)
   library(openxlsx)
   
