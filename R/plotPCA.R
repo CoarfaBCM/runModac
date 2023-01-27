@@ -1,4 +1,5 @@
 plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, transpose = F) {
+  browser()
   library(ggfortify)
   library(openxlsx)
   
@@ -8,14 +9,21 @@ plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, 
   
   if (is.character(meta)) {
     meta <- read.csv(meta, row.names = 1, check.names = F)
-    meta <- meta[match(rownames(exprs), rownames(meta)), , drop=F]
   }
   
   if (transpose) {
-    pcaRaw <- prcomp(exprs)
-  } else {
-      pcaRaw <- prcomp(t(exprs))
-    }
+    exprs <- t(exprs)
+  }
+  
+  keep <- intersect(colnames(exprs), rownames(meta))
+  exprs <- exprs[,keep,drop=F]
+  meta <- meta[keep,,drop=F]
+  if (!(identical(colnames(exprs), rownames(meta)))) {
+    stop(cat("##### Error matching samples between expression and meta data. #####"))
+  }
+  # meta <- meta[match(colnames(exprs), rownames(meta)), , drop=F]
+  
+  pcaRaw <- prcomp(t(exprs))
   
   # function for creating folders
   createDir <- function(folder) {
