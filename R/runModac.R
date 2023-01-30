@@ -52,8 +52,8 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
     myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),]
     
     # PCA plot
-    plotPCA(exprs = myexprs.raw, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_raw_",mycomparison), samplesAreRows = F)
-    plotPCA(exprs = myexprs.norm, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_norm_",mycomparison), samplesAreRows = F)
+    plotPCA(exprs = myexprs.raw, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_raw_",mycomparison), samplesAreRows = T)
+    plotPCA(exprs = myexprs.norm, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_norm_",mycomparison), samplesAreRows = T)
     
     # stat test
     myStatTest(exprs = myexprs.norm,
@@ -63,7 +63,7 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
             outdir = paste0(outdir, "/report/"))
     
     # heatmaps
-    settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 7, col_names = F), row.names = 1, check.rows = F))
+    settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
     source(paste0(scriptPath,"/plotHeatmap.R"))
     plotHeatmap(exprs = myexprs.norm,
                 meta = mymeta,
