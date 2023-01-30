@@ -21,7 +21,7 @@ myStatTest <- function(exprs, meta, test, comparison, outdir, fc.type, samplesAr
   }
   
   createDir(outdir)
-  browser()
+  
   if (test == "t-test") {
     all.pvals <- apply(exprs, 2, function(x) {t.test(x~meta[,1])$p.value}) # ANOVA test across study sites for each chemical 
   } else if (test == "anova") {
