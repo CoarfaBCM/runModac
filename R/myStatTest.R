@@ -1,4 +1,4 @@
-myStatTest <- function(exprs, meta, test, comparison, outdir) {
+myStatTest <- function(exprs, meta, test, comparison, outdir, fc.type, samplesAreRows = F) {
   
   if (is.character(exprs)) {
     exprs <- read.csv(exprs, row.names = 1, check.names = F)
@@ -6,8 +6,14 @@ myStatTest <- function(exprs, meta, test, comparison, outdir) {
   
   if (is.character(meta)) {
     meta <- read.csv(meta, row.names = 1, check.names = F)
-    meta <- meta[match(rownames(exprs), rownames(meta)), , drop=F]
   }
+  
+  # Ensuring data has rows of samples and columns of features
+  if (!samplesAreRows) {
+    exprs <- t(exprs)
+  }
+  
+  meta <- meta[match(rownames(exprs), rownames(meta)), , drop=F]
   
   # function for creating folders
   createDir <- function(folder) {
@@ -15,7 +21,7 @@ myStatTest <- function(exprs, meta, test, comparison, outdir) {
   }
   
   createDir(outdir)
-  
+  browser()
   if (test == "t-test") {
     all.pvals <- apply(exprs, 2, function(x) {t.test(x~meta[,1])$p.value}) # ANOVA test across study sites for each chemical 
   } else if (test == "anova") {

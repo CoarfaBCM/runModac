@@ -52,8 +52,8 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
     myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),]
     
     # PCA plot
-    plotPCA(exprs = myexprs.raw, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_raw_",mycomparison), transpose = T)
-    plotPCA(exprs = myexprs.norm, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_norm_",mycomparison), transpose = T)
+    plotPCA(exprs = myexprs.raw, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_raw_",mycomparison), samplesAreRows = F)
+    plotPCA(exprs = myexprs.norm, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_norm_",mycomparison), samplesAreRows = F)
     
     # stat test
     myStatTest(exprs = myexprs.norm,

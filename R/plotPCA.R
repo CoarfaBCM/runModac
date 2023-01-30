@@ -1,4 +1,4 @@
-plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, transpose = F) {
+plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, samplesAreRows = F) {
   
   library(ggfortify)
   library(openxlsx)
@@ -11,11 +11,11 @@ plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, 
     meta <- read.csv(meta, row.names = 1, check.names = F)
   }
   
-  if (transpose) {
+  if (!samplesAreRows) {
     exprs <- t(exprs)
   }
   
-  keep <- intersect(colnames(exprs), rownames(meta))
+  keep <- intersect(rownames(exprs), rownames(meta))
   exprs <- exprs[,keep,drop=F]
   meta <- meta[keep,,drop=F]
   if (!(identical(colnames(exprs), rownames(meta)))) {
