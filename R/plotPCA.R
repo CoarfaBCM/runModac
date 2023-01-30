@@ -16,14 +16,14 @@ plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, 
   }
   
   keep <- intersect(rownames(exprs), rownames(meta))
-  exprs <- exprs[,keep,drop=F]
+  exprs <- exprs[keep,,drop=F]
   meta <- meta[keep,,drop=F]
-  if (!(identical(colnames(exprs), rownames(meta)))) {
+  if (!(identical(rownames(exprs), rownames(meta)))) {
     stop(cat("##### Error matching samples between expression and meta data. #####"))
   }
   # meta <- meta[match(colnames(exprs), rownames(meta)), , drop=F]
   
-  pcaRaw <- prcomp(t(exprs))
+  pcaRaw <- prcomp(exprs)
   
   # function for creating folders
   createDir <- function(folder) {
