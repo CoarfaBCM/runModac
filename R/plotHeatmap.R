@@ -3,7 +3,7 @@ library(circlize)
 library(ComplexHeatmap)
 library(RColorBrewer)
 
-plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, reportfile, cutoffStat = "fdr", cutoff = 0.25) {
+plotHeatmap <- function(exprs, meta, test, comparison, samplesAreRows = F, outdir, groupOrder, reportfile, cutoffStat = "fdr", cutoff = 0.25) {
   
   if (is.character(exprs)) {
     exprs <- read.csv(exprs, row.names = 1, check.names = F)
@@ -11,8 +11,14 @@ plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, repor
   
   if (is.character(meta)) {
     meta <- read.csv(meta, row.names = 1, check.names = F)
-    meta <- meta[match(rownames(exprs), rownames(meta)), , drop=F]
   }
+  
+  # Ensuring data has rows of samples and columns of features
+  if (!samplesAreRows) {
+    exprs <- t(exprs)
+  }
+  
+  meta <- meta[match(rownames(exprs), rownames(meta)), , drop=F]
   
   meta <- meta[order(match(meta$group, groupOrder)), , drop=F]
   exprs <- exprs[match(rownames(meta), rownames(exprs)),]
@@ -32,7 +38,7 @@ plotHeatmap <- function(exprs, meta, test, comparison, outdir, groupOrder, repor
     sigFeatures <- read.csv(reportfile) %>% filter(pval < cutoff) %>% select(1)
   }
   if (nrow(sigFeatures) == 0) {
-    cat("No significant features at ", cutoffStat, " < ", cutoff)
+    print(cat("No significant features at", cutoffStat, "<", cutoff,"\n"))
   } else {
     scaled_df <- as.data.frame(t(scale(t(exprdf[sigFeatures[,1],]))))
     

@@ -1,6 +1,6 @@
 normIQR <- function(inputdf, comparisonsFile) {
   
-  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 7, col_names = F), row.names = 1, check.rows = F))
+  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
   log2tr <- as.logical(settings["log2transform",1])
   
   # log2 transform

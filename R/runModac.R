@@ -55,15 +55,31 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
     plotPCA(exprs = myexprs.raw, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_raw_",mycomparison), samplesAreRows = T)
     plotPCA(exprs = myexprs.norm, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_norm_",mycomparison), samplesAreRows = T)
     
-    # stat test
-    myStatTest(exprs = myexprs.norm,
-            meta = mymeta,
-            test = mytest,
-            comparison = mycomparison,
-            outdir = paste0(outdir, "/report/"))
+    settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
+    
+    if (settings["log2transform",1]) {
+      # stat test
+      myStatTest(exprs = myexprs.norm,
+                 meta = mymeta,
+                 test = mytest,
+                 comparison = mycomparison,
+                 group.ctrl.test = mygroups,
+                 fc.type = "log2",
+                 samplesAreRows = T,
+                 outdir = paste0(outdir, "/report/"))
+    } else {
+      # stat test
+      myStatTest(exprs = myexprs.norm,
+                 meta = mymeta,
+                 test = mytest,
+                 comparison = mycomparison,
+                 group.ctrl.test = mygroups,
+                 fc.type = settings["fc_type",1],
+                 samplesAreRows = T,
+                 outdir = paste0(outdir, "/report/")) 
+    }
     
     # heatmaps
-    settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
     source(paste0(scriptPath,"/plotHeatmap.R"))
     plotHeatmap(exprs = myexprs.norm,
                 meta = mymeta,
@@ -73,7 +89,8 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
                 groupOrder = mygroups,
                 reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                 cutoffStat = settings["statistic_selector",1],
-                cutoff = settings["statistic_cutoff",1])
+                cutoff = settings["statistic_cutoff",1],
+                samplesAreRows = T)
     plotHeatmap(exprs = myexprs.norm,
                 meta = mymeta,
                 test = mytest,
@@ -82,6 +99,7 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
                 groupOrder = mygroups,
                 reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                 cutoffStat = settings["statistic_selector",1],
-                cutoff = 1)
+                cutoff = 1,
+                samplesAreRows = T)
   }
 }
