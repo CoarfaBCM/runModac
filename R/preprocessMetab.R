@@ -7,9 +7,14 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
   
   all.exprs.norm <- list()
   all.exprs.raw <- list()
+  
+  print(cat("##### Normalization type:", normalization, "#####\n"))
+  print(cat("##### Log2 transform:", log2tr, "#####\n"))
+  
   for (i in seq_along(all.methods)) {
-    
     mymethod <- all.methods[i]
+    print(cat("##### Processing method:", mymethod,"#####\n"))
+    
     myoutdir <- paste(outdir,"QA_plots",sep = "/")
     
     # reading in expression data per method
@@ -85,6 +90,9 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
     ans[,!names(ans) %in% "Row.names"]
   },
   all.exprs.norm)
+  
+  print(cat("##### Total number of samples:", nrow(exprsdf.norm), "#####\n"))
+  print(cat("##### Total number of features:", ncol(exprsdf.norm), "#####\n"))
   
   myoutdir <- paste(outdir,"report",sep = "/")
   

@@ -15,11 +15,12 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
   # Creating output dir for report files
   myoutdir <- paste(outdir,"report",sep = "/")
   createDir(myoutdir)
-  
+  print(cat("##### Preprocessing started #####\n\n"))
   exprsdf <- preprocessMetab(inputFile = inputFile,
                              comparisonsFile = comparisonsFile,
                              outdir = outdir,
                              scriptPath = scriptPath)
+  print(cat("##### Preprocessing complete #####\n\n"))
   
   # Boxplot of all samples
   pdf(paste0(outdir,"/QA_plots/boxplot_all_samples.pdf"))
@@ -44,6 +45,8 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
     all.info <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], n_max = 2, col_names = F), row.names = 1, check.rows = F))
     mycomparison <- all.info[1,]
     mytest <- all.info[2,]
+    
+    print(cat("##### Performing", mytest, "for comparison:", mycomparison, "#####\n"))
     
     mygroups <- suppressMessages(as.character(read_excel(comparisonsFile, trim_ws = T, sheet = i+1, skip = 2, n_max = 1, col_names = F))[-1])
     mymeta <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], skip = 3), row.names = 2, check.rows = F))
