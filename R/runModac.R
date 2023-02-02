@@ -1,5 +1,5 @@
 
-runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir = "results", scriptPath) {
+runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir = "results", scriptPath, samplesAreRows = T) {
   library(readxl)
   library(tidyr)
   library(ggplot2)
@@ -19,7 +19,8 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
   exprsdf <- preprocessMetab(inputFile = inputFile,
                              comparisonsFile = comparisonsFile,
                              outdir = outdir,
-                             scriptPath = scriptPath)
+                             scriptPath = scriptPath,
+                             samplesAreRows = samplesAreRows)
   print(cat("##### Preprocessing complete #####\n\n"))
   
   # Boxplot of all samples

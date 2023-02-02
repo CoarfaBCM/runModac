@@ -1,4 +1,4 @@
-preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
+preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAreRows = T) {
   
   all.methods <- excel_sheets(inputFile)
   settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
@@ -19,6 +19,10 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath) {
     
     # reading in expression data per method
     inputdf <- suppressMessages(data.frame(read_excel(inputFile, trim_ws = T, sheet = mymethod), row.names = 1, check.rows = F, check.names = F))
+    
+    if (!samplesAreRows) {
+       inputdf <- t(inputdf)
+    }
     
     if (normalization == "none") {
       # log2 transform

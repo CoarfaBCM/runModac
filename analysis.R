@@ -27,3 +27,11 @@ runModac(inputFile = "example4-prenormalized-nodummy/input/input.xlsx",
          type = "metabolomics",
          outdir = "example4-prenormalized-nodummy/results",
          scriptPath = "~/Box Sync/runModac/R/")
+
+# example5-transposed
+runModac(inputFile = "example5-transposed/input/input.xlsx",
+         comparisonsFile = "example5-transposed/input/comparisons.xlsx",
+         type = "metabolomics",
+         samplesAreRows = F,
+         outdir = "example5-transposed/results",
+         scriptPath = "~/Box Sync/runModac/R/")

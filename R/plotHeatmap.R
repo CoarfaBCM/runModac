@@ -80,7 +80,7 @@ plotHeatmap <- function(exprs, meta, test, comparison, samplesAreRows = F, outdi
     ha1 <- HeatmapAnnotation(df = meta, show_annotation_name = T, annotation_height = .25,
                             col = col_list)
     
-    ht<-Heatmap(matrix = scaled_df,
+    ht<-Heatmap(matrix = as.matrix(scaled_df),
                 top_annotation = ha1,
                 clustering_distance_rows = "euclidean",
                 name = "z-score",
