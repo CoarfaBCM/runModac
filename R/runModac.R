@@ -1,12 +1,11 @@
 
-runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir = "results", scriptPath, samplesAreRows = T) {
+runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir = "results", scriptPath, samplesAreRows = T, sampleIDRow = 2) {
   library(readxl)
   library(tidyr)
   library(ggplot2)
   library(openxlsx)
   
   source(paste0(scriptPath,"/createDir.R"))
-  source(paste0(scriptPath,"/preprocessMetab.R"))
   
   # Creating output dir for QA plots
   myoutdir <- paste(outdir,"QA_plots",sep = "/")
@@ -15,12 +14,27 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
   # Creating output dir for report files
   myoutdir <- paste(outdir,"report",sep = "/")
   createDir(myoutdir)
+  
   print(cat("##### Preprocessing started #####\n\n"))
-  exprsdf <- preprocessMetab(inputFile = inputFile,
-                             comparisonsFile = comparisonsFile,
-                             outdir = outdir,
-                             scriptPath = scriptPath,
-                             samplesAreRows = samplesAreRows)
+  source(paste0(scriptPath,"/preprocessMetab.R"))
+  if (type == "metabolomics") {
+    exprsdf <- preprocessMetab(inputFile = inputFile,
+                               comparisonsFile = comparisonsFile,
+                               outdir = outdir,
+                               scriptPath = scriptPath,
+                               samplesAreRows = samplesAreRows) 
+  } else if (type == "rppa") {
+    source("R/rppa-aggr.R")
+    aggregateRPPA(inputFile = inputFile,
+                  outFile = paste0(myoutdir, "/aggregate_data.xlsx"),
+                  geneNames = F,
+                  sampleIDRow = sampleIDRow)
+    exprsdf <- preprocessMetab(inputFile = paste0(myoutdir, "/aggregate_data.xlsx"),
+                               comparisonsFile = comparisonsFile,
+                               outdir = outdir,
+                               scriptPath = scriptPath,
+                               samplesAreRows = T)
+  }
   print(cat("##### Preprocessing complete #####\n\n"))
   
   # Boxplot of all samples
