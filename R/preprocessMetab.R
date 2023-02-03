@@ -25,11 +25,11 @@ preprocessMetab <- function(inputFile, comparisonsFile, outdir, scriptPath, samp
     }
     
     if (normalization == "none") {
+      all.exprs.raw[[i]] <- inputdf
       # log2 transform
       if(log2tr){
         inputdf <- log2(inputdf)
       }
-      all.exprs.raw[[i]] <- inputdf
       all.exprs.norm[[i]] <- inputdf
     } else {
       # saving qc row start idx

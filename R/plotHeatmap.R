@@ -32,9 +32,9 @@ plotHeatmap <- function(exprs, meta, test, comparison, samplesAreRows = F, outdi
   mygrouping <- factor(meta[,1], levels = groupOrder)
   exprdf <- data.frame(t(exprs), check.rows = F, check.names = F)
   
-  if (cutoffStat == "fdr") {
+  if (grepl("fdr", cutoffStat, ignore.case = T)) {
     sigFeatures <- read.csv(reportfile) %>% filter(fdr < cutoff) %>% select(1)
-  } else if (cutoffStat == "pval") {
+  } else if (grepl("pval", cutoffStat, ignore.case = T)) {
     sigFeatures <- read.csv(reportfile) %>% filter(pval < cutoff) %>% select(1)
   }
   if (nrow(sigFeatures) == 0) {

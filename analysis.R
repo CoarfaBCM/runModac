@@ -35,3 +35,12 @@ runModac(inputFile = "example5-transposed/input/input.xlsx",
          samplesAreRows = F,
          outdir = "example5-transposed/results",
          scriptPath = "~/Box Sync/runModac/R/")
+
+# example6-rppa
+runModac(inputFile = "example6-rppa/input/input.xlsx",
+         comparisonsFile = "example6-rppa/input/comparisons.xlsx",
+         type = "rppa",
+         outdir = "example6-rppa/results",
+         samplesAreRows = F,
+         sampleIDRow = 1,
+         scriptPath = "~/Box Sync/runModac/R/")
