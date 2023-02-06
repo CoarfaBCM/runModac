@@ -97,6 +97,12 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
                  outdir = paste0(outdir, "/report/")) 
     }
     
+    if (mytest == "t-test") {
+      createDir(paste0(outdir,"/Rnk"))
+      source("R/createRNK.R")
+      createRNK(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+                outFile = paste0(outdir,"/Rnk/Rnk_",mycomparison,".rnk"))
+    }
     # heatmaps
     source(paste0(scriptPath,"/plotHeatmap.R"))
     plotHeatmap(exprs = myexprs.norm,
