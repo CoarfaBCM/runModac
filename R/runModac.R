@@ -74,7 +74,7 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
     plotPCA(exprs = myexprs.norm, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_norm_",mycomparison), samplesAreRows = T)
     
     settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
-    
+    fcType <- settings["fc_type",1]
     if (settings["log2transform",1]) {
       # stat test
       myStatTest(exprs = myexprs.norm,
@@ -92,16 +92,32 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
                  test = mytest,
                  comparison = mycomparison,
                  group.ctrl.test = mygroups,
-                 fc.type = settings["fc_type",1],
+                 fc.type = fcType,
                  samplesAreRows = T,
                  outdir = paste0(outdir, "/report/")) 
     }
     
     if (mytest == "t-test") {
       createDir(paste0(outdir,"/Rnk"))
+      createDir(paste0(outdir,"/Signature"))
+      
       source("R/createRNK.R")
       createRNK(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                 outFile = paste0(outdir,"/Rnk/Rnk_",mycomparison,".rnk"))
+      
+      if (fcType == "log2") {
+        temp_fc_cutoff <- log2(as.numeric(settings["linear_fc_cutoff",1]))
+      } else if (fcType == "linear") {
+        temp_fc_cutoff <- settings["linear_fc_cutoff",1]
+      }
+      outFileName <- paste0(outdir,"/Signature/Sig_",mycomparison,"_",fcType,"FC",temp_fc_cutoff,"_",settings["statistic_selector",1],settings["statistic_cutoff",1],".txt")
+      
+      source("R/createSignature.R")
+      createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+                      outFile = outFileName,
+                      fcCutoff = temp_fc_cutoff,
+                      statType = settings["statistic_selector",1],
+                      statCutoff = settings["statistic_cutoff",1])
     }
     # heatmaps
     source(paste0(scriptPath,"/plotHeatmap.R"))
