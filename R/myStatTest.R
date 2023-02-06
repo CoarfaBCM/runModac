@@ -23,7 +23,9 @@ myStatTest <- function(exprs, meta, test, comparison, group.ctrl.test, outdir, f
   createDir(outdir)
   
   if (test == "t-test") {
-    all.pvals <- apply(exprs, 2, function(x) {t.test(x~meta[,1])$p.value}) # ANOVA test across study sites for each chemical
+    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
+                                                     t.test(x~meta[,1])$p.value,
+                                                     1)})
     
     if (fc.type == "log2") {
       all.fc <- apply(exprs[meta[,1] == group.ctrl.test[2], ], 2, mean) - apply(exprs[meta[,1] == group.ctrl.test[1], ], 2, mean)
@@ -41,7 +43,9 @@ myStatTest <- function(exprs, meta, test, comparison, group.ctrl.test, outdir, f
     fullreportdf <- rbind(c(NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
     write.csv(fullreportdf, paste0(outdir,"/FullReport_",test,"_",comparison,".csv"), row.names = F)
   } else if (test == "anova") {
-    all.pvals <- apply(exprs, 2, function(x) {summary(aov(x~meta[,1]))[[1]][["Pr(>F)"]][1]}) # ANOVA test across study sites for each chemical
+    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
+                                                     summary(aov(x~meta[,1]))[[1]][["Pr(>F)"]][1],
+                                                     1)}) # ANOVA test across study sites for each chemical
     all.fdr <- p.adjust(all.pvals, method = "BH") # FDR correction
     
     reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, row.names = NULL)

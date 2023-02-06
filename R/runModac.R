@@ -101,7 +101,7 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
       createDir(paste0(outdir,"/Rnk"))
       createDir(paste0(outdir,"/Signature"))
       
-      source("R/createRNK.R")
+      source(paste0(scriptPath,"/createRNK.R"))
       createRNK(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                 outFile = paste0(outdir,"/Rnk/Rnk_",mycomparison,".rnk"))
       
@@ -112,7 +112,7 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
       }
       outFileName <- paste0(outdir,"/Signature/Sig_",mycomparison,"_",fcType,"FC",temp_fc_cutoff,"_",settings["statistic_selector",1],settings["statistic_cutoff",1],".txt")
       
-      source("R/createSignature.R")
+      source(paste0(scriptPath,"/createSignature.R"))
       createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                       outFile = outFileName,
                       fcCutoff = temp_fc_cutoff,
