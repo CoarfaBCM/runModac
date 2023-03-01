@@ -1,6 +1,6 @@
 library(dplyr)
 library(circlize)
-library(ComplexHeatmap)
+suppressPackageStartupMessages(library(ComplexHeatmap))
 library(RColorBrewer)
 
 plotHeatmap <- function(exprs, meta, test, comparison, samplesAreRows = F, outdir, groupOrder, reportfile, cutoffStat = "fdr", cutoff = 0.25) {

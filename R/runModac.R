@@ -16,20 +16,20 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
   createDir(myoutdir)
   
   print(cat("##### Preprocessing started #####\n\n"))
-  source(paste0(scriptPath,"/preprocessMetab.R"))
+  source(paste0(scriptPath,"/preProcess.R"))
   if (type == "metabolomics") {
-    exprsdf <- preprocessMetab(inputFile = inputFile,
+    exprsdf <- preProcess(inputFile = inputFile,
                                comparisonsFile = comparisonsFile,
                                outdir = outdir,
                                scriptPath = scriptPath,
                                samplesAreRows = samplesAreRows) 
   } else if (type == "rppa") {
-    source("R/rppa-aggr.R")
-    aggregateRPPA(inputFile = inputFile,
-                  outFile = paste0(myoutdir, "/aggregate_data.xlsx"),
+    source("R/rppaAggr.R")
+    rppaAggr(inputFile = inputFile,
+                  outdir = myoutdir,
                   geneNames = F,
                   sampleIDRow = sampleIDRow)
-    exprsdf <- preprocessMetab(inputFile = paste0(myoutdir, "/aggregate_data.xlsx"),
+    exprsdf <- preProcess(inputFile = paste0(myoutdir, "/aggregate_data.xlsx"),
                                comparisonsFile = comparisonsFile,
                                outdir = outdir,
                                scriptPath = scriptPath,
