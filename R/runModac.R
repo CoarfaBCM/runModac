@@ -48,10 +48,23 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
           las=2,
           outline = T)
   dev.off()
+  
+  jpeg(paste0(outdir,"/QA_plots/boxplot_all_samples.jpg"))
+  par(mar = mar.def + c(5,0,-3,0))
+  boxplot(t(exprsdf[["norm"]]),
+          ylab="Relative abundance",
+          main="Comparison of samples (all methods)",
+          las=2,
+          outline = T)
+  dev.off()
+  
   par(mar = mar.def)
   
   # reading in all comparisons
   all.comparisons <- excel_sheets(comparisonsFile)[-1]
+  
+  # pptx
+  library(officer)
   
   source(paste0(scriptPath,"/myStatTest.R"))
   source(paste0(scriptPath,"/plotPCA.R"))
@@ -95,6 +108,15 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
                  fc.type = fcType,
                  samplesAreRows = T,
                  outdir = paste0(outdir, "/report/")) 
+    }
+    
+    if (type == "rppa") {
+      fullreport <- read.csv(paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".csv"), header = T, row.names = NULL)
+      tempdf <- read.xlsx(paste0(outdir,"/report/full_aggregate_data.xlsx"), rowNames = F)
+      geneSymbols <- unname(sapply(fullreport$ID[-1], function(x){tempdf$GeneSymbol[tempdf$AB_name == x]}))
+      finalreport <- data.frame(GeneSymbol = c(NA,geneSymbols), fullreport)
+      names(finalreport)[2] <- "AB_name"
+      write.csv(finalreport, paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".csv"), row.names = F) 
     }
     
     if (mytest == "t-test") {
@@ -142,4 +164,5 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
                 cutoff = 1,
                 samplesAreRows = T)
   }
+  browser()
 }
