@@ -2,6 +2,7 @@ normIQR <- function(inputdf, comparisonsFile) {
   
   settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
   log2tr <- as.logical(settings["log2transform",1])
+  qc.idx <- as.numeric(settings["QC_row",1])-1
   
   # log2 transform
   if(log2tr){
@@ -18,5 +19,8 @@ normIQR <- function(inputdf, comparisonsFile) {
   })), row.names = rownames(inputdf))
   colnames(newdf) <- colnames(inputdf)
   
-  return(newdf)
+  return(list(data = newdf,
+              qc_num = length(qc.idx:nrow(inputdf))
+              )
+         )
 }

@@ -88,14 +88,18 @@ plotHeatmap <- function(exprs, meta, test, comparison, samplesAreRows = F, outdi
                 col=col_heatmap,
                 cluster_columns = F,
                 cluster_rows = T,
-                row_names_gp = gpar(fontsize=5),
+                row_names_gp = gpar(fontsize=6),
                 rect_gp = gpar(col = NA, lty = 1, lwd = 1),
-                column_names_gp = gpar(fontsize=5),
+                column_names_gp = gpar(fontsize=6),
                 show_row_dend = T,
                 km=1,
                 heatmap_legend_param = list(legend_direction = "horizontal",legend_width = unit(1, "in")))
     
     pdf(paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".pdf"), height = 14, width = 10)
+    draw(ht, heatmap_legend_side="bottom")
+    dev.off()
+    
+    jpeg(paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".jpg"), height = 14, width = 10, units = "in", quality = 1, res = 300)
     draw(ht, heatmap_legend_side="bottom")
     dev.off()
   }

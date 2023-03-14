@@ -1,5 +1,13 @@
 
-runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir = "results", scriptPath, samplesAreRows = T, sampleIDRow = 2) {
+runModac <- function(inputFile,
+                     comparisonsFile,
+                     type = "metabolomics",
+                     outdir = "results",
+                     project_title = "Project Report",
+                     project_subtitle = "Metabolomics Analysis",
+                     scriptPath,
+                     samplesAreRows = T,
+                     sampleIDRow = 2) {
   library(readxl)
   library(tidyr)
   library(ggplot2)
@@ -164,5 +172,12 @@ runModac <- function(inputFile, comparisonsFile, type = "metabolomics", outdir =
                 cutoff = 1,
                 samplesAreRows = T)
   }
-  browser()
+  
+  source("R/createPptx.R")
+  createPptx(project_title = project_title,
+             project_subtitle = project_subtitle,
+             exprsdf = exprsdf,
+             settings = settings,
+             all.comparisons = all.comparisons,
+             outdir = outdir)
 }

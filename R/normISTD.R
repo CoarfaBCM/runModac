@@ -46,6 +46,18 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
        pch = 19)
   dev.off()
   
+  jpeg(paste(myoutdir,paste0("dIS_dist_",mymethod,".jpg"),sep = "/"))
+  plot(temp,
+       ylim = c(ceiling(mean(temp))-4, ceiling(mean(temp))+4),
+       xlim = c(0,nrow(inputdf)),
+       xlab = "Samples",
+       ylab = "Log2 ISTD",
+       main = paste0(mymethod, " ISTD distribution (",colnames(inputdf)[ncol(inputdf)],") [CV = ",round(cv,2),"]"),
+       cex.main = 0.8,
+       col = "blue",
+       pch = 19)
+  dev.off()
+  
   # ISTD normalization
   inputdf[1:(ncol(inputdf)-1)] <- apply(inputdf[1:(ncol(inputdf)-1)], 2, function(x){x/inputdf[,ncol(inputdf)]})
   
@@ -55,7 +67,10 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   }
   
   # dropping istd
-  inputdf <- inputdf[,-ncol(inputdf)]
-  
-  return(inputdf)
+  return(list(data = inputdf[,-ncol(inputdf)],
+              istd = colnames(inputdf)[ncol(inputdf)],
+              cv = round(cv,2),
+              qc_num = length(qc.idx:nrow(inputdf))
+              )
+         )
 }
