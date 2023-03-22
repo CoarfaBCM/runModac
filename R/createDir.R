@@ -1,4 +1,4 @@
 # function for creating folders
 createDir <- function(folder) {
-  if (!dir.exists(paste(folder))){dir.create(paste(folder), recursive = TRUE)}       
+  if (!dir.exists(folder)){dir.create(folder, recursive = TRUE)}       
 }
