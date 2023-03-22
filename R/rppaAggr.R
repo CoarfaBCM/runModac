@@ -1,7 +1,11 @@
 
 rppaAggr <- function(inputFile, outdir, geneNames = F, sampleIDRow = 2) {
-  library(openxlsx)
-  mydf <- openxlsx::read.xlsx(inputFile)
+  # Loading required packages and installing ones not present
+  list.of.packages <- c("openxlsx")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  
+  mydf <- read.xlsx(inputFile)
   mygroups <- data.frame(colnames(mydf)[-c(1:5)], t(mydf[1,-c(1:5)]))
   names(mygroups) <- c("ID", "Sample")
   
@@ -29,10 +33,10 @@ rppaAggr <- function(inputFile, outdir, geneNames = F, sampleIDRow = 2) {
       newdf$Sample <- uniqueNames$ID 
     }
   }
-  openxlsx::write.xlsx(list(rppa = newdf), paste0(outdir, "/aggregate_data.xlsx"), rowNames = F) 
+  write.xlsx(list(rppa = newdf), paste0(outdir, "/aggregate_data.xlsx"), rowNames = F) 
   
   newdf <- data.frame(newdf, row.names = 1, check.rows = F, check.names = F)
   
   finaldf <- data.frame(GeneSymbol = mydf[,2], AB_name = colnames(newdf), t(newdf), check.rows = F, check.names = F)
-  openxlsx::write.xlsx(list(rppa = finaldf), paste0(outdir, "/full_aggregate_data.xlsx"), rowNames = F)
+  write.xlsx(list(rppa = finaldf), paste0(outdir, "/full_aggregate_data.xlsx"), rowNames = F)
 }

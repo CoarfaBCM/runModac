@@ -9,6 +9,11 @@ createPptx <- function(project_title = "Project Report",
   library(tidyverse)
   library(jpeg)
   
+  # Loading required packages and installing ones not present
+  list.of.packages <- c("officer", "tidyverse", "jpeg")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  
   normalization <- settings["normalization",1]
   log2tr <- as.logical(settings["log2transform",1])
   

@@ -8,11 +8,11 @@ runModac <- function(inputFile,
                      scriptPath,
                      samplesAreRows = T,
                      sampleIDRow = 2) {
-  library(readxl)
-  library(tidyr)
-  library(ggplot2)
-  library(openxlsx)
-  library(officer)
+  
+  # Loading required packages and installing ones not present
+  list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
   source(paste0(scriptPath,"/createDir.R"))
   

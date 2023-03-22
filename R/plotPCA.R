@@ -1,7 +1,9 @@
 plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, samplesAreRows = F) {
   
-  library(ggfortify)
-  library(openxlsx)
+  # Loading required packages and installing ones not present
+  list.of.packages <- c("ggfortify", "openxlsx")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
   if (is.character(exprs)) {
     exprs <- read.csv(exprs, row.names = 1, check.names = F)

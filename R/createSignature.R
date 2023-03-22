@@ -1,5 +1,9 @@
 createSignature <- function(reportFile, outFile, fcCutoff, statType, statCutoff) {
-  library(tidyverse)
+  # Loading required packages and installing ones not present
+  list.of.packages <- c("tidyverse")
+  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  
   data <- read.csv(reportFile, check.names = F)
   data <- data[order(data[,grepl("fc",colnames(data))], decreasing = T),]
   
