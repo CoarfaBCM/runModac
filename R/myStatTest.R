@@ -1,4 +1,4 @@
-myStatTest <- function(exprs, meta, test, comparison, group.ctrl.test, outdir, fc.type, samplesAreRows = F) {
+myStatTest <- function(exprs, meta, test, comparison, group.ctrl.test, group.colors, outdir, fc.type, samplesAreRows = F) {
   
   if (is.character(exprs)) {
     exprs <- read.csv(exprs, row.names = 1, check.names = F)
@@ -65,15 +65,13 @@ myStatTest <- function(exprs, meta, test, comparison, group.ctrl.test, outdir, f
   # fullreportdf <- rbind(c(NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
   # write.csv(fullreportdf, paste0(outdir,"/FullReport_",test,"_",comparison,".csv"), row.names = F)
   
-  mycolors <- c("red","blue","green","yellow","black","grey","orange","turqoise")
-  
   pdf(paste0(outdir,"/boxplots_features_",comparison,".pdf"))
   for (i in 1:ncol(exprs)) {
     mytitle <- paste0(colnames(exprs)[i]," (FDR = ",round(all.fdr[i],2),")")
     par(cex.main=0.7)
     par(cex.axis=0.5)
-    boxplot(unlist(exprs[,i]) ~ meta[,1],
-            col = mycolors,
+    boxplot(unlist(exprs[,i]) ~ factor(meta[,1], levels = group.ctrl.test),
+            col = group.colors,
             xlab = NULL,
             ylab = NULL,
             main=mytitle,
