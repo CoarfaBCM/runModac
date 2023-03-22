@@ -12,6 +12,7 @@ runModac <- function(inputFile,
   library(tidyr)
   library(ggplot2)
   library(openxlsx)
+  library(officer)
   
   source(paste0(scriptPath,"/createDir.R"))
   
@@ -71,8 +72,16 @@ runModac <- function(inputFile,
   # reading in all comparisons
   all.comparisons <- excel_sheets(comparisonsFile)[-1]
   
-  # pptx
-  library(officer)
+  # assigning group colors for heatmaps
+  all.groups <- c()
+  for (i in seq_along(all.comparisons)) {
+    mymeta <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], skip = 3), row.names = 2, check.rows = F))
+    all.groups <- c(all.groups, mymeta[,1])
+  }
+  all.groups <- unique(all.groups)
+  colors_set <- c("red","steelblue","green", "orange", "pink","aquamarine","purple","grey","black","khaki","maroon","yellow")
+  col_list <- list(group=colors_set[seq_along(all.groups)])
+  names(col_list$group) <- all.groups
   
   source(paste0(scriptPath,"/myStatTest.R"))
   source(paste0(scriptPath,"/plotPCA.R"))
@@ -157,6 +166,7 @@ runModac <- function(inputFile,
                 comparison = mycomparison,
                 outdir = paste0(outdir, "/heatmaps/"),
                 groupOrder = mygroups,
+                groupColors = col_list$group[mygroups],
                 reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                 cutoffStat = settings["statistic_selector",1],
                 cutoff = settings["statistic_cutoff",1],
@@ -167,6 +177,7 @@ runModac <- function(inputFile,
                 comparison = mycomparison,
                 outdir = paste0(outdir, "/heatmaps/"),
                 groupOrder = mygroups,
+                groupColors = col_list$group[mygroups],
                 reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                 cutoffStat = settings["statistic_selector",1],
                 cutoff = 1,

@@ -3,7 +3,17 @@ library(circlize)
 suppressPackageStartupMessages(library(ComplexHeatmap))
 library(RColorBrewer)
 
-plotHeatmap <- function(exprs, meta, test, comparison, samplesAreRows = F, outdir, groupOrder, reportfile, cutoffStat = "fdr", cutoff = 0.25) {
+plotHeatmap <- function(exprs,
+                        meta,
+                        test,
+                        comparison,
+                        samplesAreRows = F,
+                        outdir,
+                        groupOrder,
+                        groupColors,
+                        reportfile,
+                        cutoffStat = "fdr",
+                        cutoff = 0.25) {
   
   if (is.character(exprs)) {
     exprs <- read.csv(exprs, row.names = 1, check.names = F)
@@ -49,32 +59,8 @@ plotHeatmap <- function(exprs, meta, test, comparison, samplesAreRows = F, outdi
     x<-abs(max(scaled_df))
     y<-abs(min(scaled_df))
     scale<-max(c(x,y))
-    # scale <- 4
     col_heatmap <- colorRamp2(c((-scale)*.75, 0,(scale)*.75), c("BLUE2", "black", "yellow"))
-    
-    # ht <- Heatmap(matrix = scaled_df,
-    #               col=col_heatmap,
-    #               name = "z-score",
-    #               rect_gp = gpar(col = NA, lty = 1, lwd = 1),
-    #               cluster_rows = T,
-    #               row_names_gp = gpar(fontsize=5),
-    #               cluster_columns = F,
-    #               column_split = mygrouping,
-    #               column_title = NULL,
-    #               top_annotation = HeatmapAnnotation(Group = anno_block(gp = gpar(fill=c("red","steelblue","green", "orange", "pink","aquamarine","purple","grey","black","maroon","khaki")),
-    #                                                                     labels = levels(mygrouping),
-    #                                                                     labels_gp = gpar(font=2, fontsize=7))),
-    #               show_column_names = F,
-    #               border = T,
-    #               show_heatmap_legend = T,
-    #               heatmap_legend_param = list(legend_direction = "horizontal", title_position = "lefttop"))
-    # 
-    # pdf(paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".pdf"), height = 14, width = 10)
-    # draw(ht, heatmap_legend_side="bottom")
-    # dev.off()
-    
-    colors_set <- c("red","steelblue","green", "orange", "pink","aquamarine","purple","grey","black","khaki","maroon","yellow")
-    col_list <- list(group=colors_set[seq_along(groupOrder)])
+    col_list <- list(group=groupColors)
     names(col_list$group) <- groupOrder
     
     ha1 <- HeatmapAnnotation(df = meta, show_annotation_name = T, annotation_height = .25,
