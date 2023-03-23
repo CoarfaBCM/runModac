@@ -2,7 +2,7 @@ createPptx <- function(project_title = "Project Report",
                        project_subtitle = "Metabolomics Analysis",
                        exprsdf = exprsdf,
                        settings = settings,
-                       all.comparisons = all.comparisons,
+                       all.comparison.labels = all.comparison.labels,
                        outdir = outdir) {
   
   library(officer)
@@ -46,18 +46,18 @@ createPptx <- function(project_title = "Project Report",
     }
   }
   
-  if (all(grepl("_over_", all.comparisons, ignore.case = T))) {
+  if (all(grepl("_over_", all.comparison.labels, ignore.case = T))) {
     comparison <- c("t-test",
-                    all.comparisons)
-    comparison_levels <- c(2, rep(3, length(all.comparisons)))
+                    all.comparison.labels)
+    comparison_levels <- c(2, rep(3, length(all.comparison.labels)))
   } else {
-    myflag <- grepl("_over_", all.comparisons, ignore.case = T)
+    myflag <- grepl("_over_", all.comparison.labels, ignore.case = T)
     comparison <- c("t-test",
-                    all.comparisons[myflag],
+                    all.comparison.labels[myflag],
                     "anova",
-                    all.comparisons[!(myflag)])
-    comparison_levels <- c(2, rep(3, length(all.comparisons[myflag])),
-                           2, rep(3, length(all.comparisons[!(myflag)])))
+                    all.comparison.labels[!(myflag)])
+    comparison_levels <- c(2, rep(3, length(all.comparison.labels[myflag])),
+                           2, rep(3, length(all.comparison.labels[!(myflag)])))
   }
   
   #define where the template powerpoint is located
@@ -129,6 +129,35 @@ createPptx <- function(project_title = "Project Report",
   if(!is_empty(liver_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",liver_plots),title=c("Liver Control"),names=liver_names)}
   if(!is_empty(IS_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",IS_plots),title=c("Internal Standards Distribution"),names=IS_names)}
   
+  # PCA ----------------------------------------------------------------
+  pcas<-list.files(path = paste0(outdir, "/pca/"), pattern="*.jpg")
+  pcas_jpg<-comparison[!grepl("anova|t-test", comparison, ignore.case = T)]
+  pcas_names<-pcas_jpg
+  pcas_jpg<-gsub(x=pcas_jpg,pattern = "\\+","\\\\\\+")
+  pcas_jpg<-gsub(x=pcas_jpg,pattern = "\\-","\\\\\\-")
+  
+  for(i in seq_along(pcas_jpg)){
+    pcas_norm<-pcas[grepl(str_c("pca_norm_", pcas_jpg[i]), pcas, ignore.case = T)]
+    pcas_raw<-pcas[grepl(str_c("pca_raw_", pcas_jpg[i]), pcas, ignore.case = T)]
+    
+    report<-report%>%add_slide(layout="Comparison",master="Custom Design")
+    report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",pcas_names[i]))
+    report<-report%>%ph_with(location=ph_location_type("body", id=3),value="Normalized PCA")
+    report<-report%>%ph_with(location=ph_location_type("body", id=1),value="Raw PCA")
+    
+    if(!is_empty(pcas_norm)){
+      img<-readJPEG(paste0(outdir,"/pca/",pcas_norm))
+      height<-dim(img)[1]/96
+      width<-dim(img)[2]/96
+      report<-report%>%ph_with(value=external_img(paste0(outdir,"/pca/",pcas_norm)),ph_location(left = 5.08,top = 1.56,width = 4.5,height = 4.25/width*height))
+    }
+    if(!is_empty(pcas_raw)){
+      img<-readJPEG(paste0(outdir,"/pca/",pcas_raw))
+      height<-dim(img)[1]/96
+      width<-dim(img)[2]/96
+      report<-report%>%ph_with(value=external_img(paste0(outdir,"/pca/",pcas_raw)),ph_location(left = 0.5,top = 1.56,width = 4.5,height = 4.25/width*height))
+    }
+  }
   
   # Heatmaps ----------------------------------------------------------------
   heatmaps<-list.files(path = paste0(outdir, "/heatmaps/"), pattern="*.jpg")
