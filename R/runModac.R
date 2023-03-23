@@ -71,6 +71,7 @@ runModac <- function(inputFile,
   
   # reading in all comparisons
   all.comparisons <- excel_sheets(comparisonsFile)[-1]
+  all.comparison.labels <- c()
   
   # assigning group colors for heatmaps
   all.groups <- c()
@@ -89,6 +90,7 @@ runModac <- function(inputFile,
     # readying inputs
     all.info <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], n_max = 2, col_names = F), row.names = 1, check.rows = F))
     mycomparison <- all.info[1,]
+    all.comparison.labels <- c(all.comparison.labels, mycomparison)
     mytest <- all.info[2,]
     
     print(cat("##### Performing", mytest, "for comparison:", mycomparison, "#####\n"))
@@ -191,6 +193,6 @@ runModac <- function(inputFile,
              project_subtitle = project_subtitle,
              exprsdf = exprsdf,
              settings = settings,
-             all.comparisons = all.comparisons,
+             all.comparison.labels = all.comparison.labels,
              outdir = outdir)
 }

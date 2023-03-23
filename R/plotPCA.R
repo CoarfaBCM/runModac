@@ -46,4 +46,9 @@ plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, 
                    label.size = labSize))
   }
   dev.off()
+  
+  saveFile <- paste0("pca",suffix,".jpg")
+  jpeg(paste(outdir,saveFile,sep="/"), quality = 1)
+  print(autoplot(pcaRaw, data = meta, colour = colnames(meta)[1]))
+  dev.off()
 }
