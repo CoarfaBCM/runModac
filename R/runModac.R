@@ -33,7 +33,7 @@ runModac <- function(inputFile,
                                scriptPath = scriptPath,
                                samplesAreRows = samplesAreRows) 
   } else if (type == "rppa") {
-    source("R/rppaAggr.R")
+    source(paste0(scriptPath,"/rppaAggr.R"))
     rppaAggr(inputFile = inputFile,
                   outdir = myoutdir,
                   geneNames = F,
@@ -188,11 +188,13 @@ runModac <- function(inputFile,
                 samplesAreRows = T)
   }
   
-  source("R/createPptx.R")
+  source(paste0(scriptPath,"/createPptx.R"))
+  template_pptx_path <- paste0(gsub("R","data",scriptPath),"/Project_Report_Template.pptx")
   createPptx(project_title = project_title,
              project_subtitle = project_subtitle,
              exprsdf = exprsdf,
              settings = settings,
              all.comparison.labels = all.comparison.labels,
-             outdir = outdir)
+             outdir = outdir,
+             template_pptx_path = template_pptx_path)
 }

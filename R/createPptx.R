@@ -3,7 +3,8 @@ createPptx <- function(project_title = "Project Report",
                        exprsdf = exprsdf,
                        settings = settings,
                        all.comparison.labels = all.comparison.labels,
-                       outdir = outdir) {
+                       outdir = outdir,
+                       template_pptx_path) {
   
   library(officer)
   library(tidyverse)
@@ -61,7 +62,7 @@ createPptx <- function(project_title = "Project Report",
   }
   
   #define where the template powerpoint is located
-  report <- read_pptx("data/Project_Report_Template.pptx")
+  report <- read_pptx(template_pptx_path)
   
   # Functions ---------------------------------------------------------------
   ctrl_ppt<-function(report,files,title,names) {
