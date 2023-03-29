@@ -153,14 +153,14 @@ runModac <- function(inputFile,
       } else if (fcType == "linear") {
         temp_fc_cutoff <- settings["linear_fc_cutoff",1]
       }
-      outFileName <- paste0(outdir,"/Signature/Sig_",mycomparison,"_",fcType,"FC",temp_fc_cutoff,"_",settings["statistic_selector",1],settings["statistic_cutoff",1],".txt")
+      outFileName <- paste0(outdir,"/Signature/Sig_",mycomparison,"_",fcType,"FC",temp_fc_cutoff,"_",settings["padj_method",1],settings["padj_cutoff",1],".txt")
       
       source(paste0(scriptPath,"/createSignature.R"))
       createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                       outFile = outFileName,
                       fcCutoff = temp_fc_cutoff,
-                      statType = settings["statistic_selector",1],
-                      statCutoff = settings["statistic_cutoff",1])
+                      statType = settings["padj_method",1],
+                      statCutoff = settings["padj_cutoff",1])
     }
     # heatmaps
     source(paste0(scriptPath,"/plotHeatmap.R"))
@@ -172,8 +172,8 @@ runModac <- function(inputFile,
                 groupOrder = mygroups,
                 groupColors = col_list$group[mygroups],
                 reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
-                cutoffStat = settings["statistic_selector",1],
-                cutoff = settings["statistic_cutoff",1],
+                cutoffStat = settings["padj_method",1],
+                cutoff = settings["padj_cutoff",1],
                 samplesAreRows = T)
     plotHeatmap(exprs = myexprs.norm,
                 meta = mymeta,
@@ -183,7 +183,7 @@ runModac <- function(inputFile,
                 groupOrder = mygroups,
                 groupColors = col_list$group[mygroups],
                 reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
-                cutoffStat = settings["statistic_selector",1],
+                cutoffStat = settings["padj_method",1],
                 cutoff = 1,
                 samplesAreRows = T)
   }
