@@ -169,8 +169,8 @@ createPptx <- function(project_title = "Project Report",
   
   for(i in seq_along(heatmaps_jpg)){
     
-    heatmaps_sub_0<-heatmaps[grepl(str_c("anova_",heatmaps_jpg[i],"_",settings["statistic_selector",1],settings["statistic_cutoff",1],"|","t-test","_",heatmaps_jpg[i],"_",settings["statistic_selector",1],settings["statistic_cutoff",1]), heatmaps, ignore.case = T)]
-    heatmaps_sub_1<-heatmaps[grepl(str_c("anova_",heatmaps_jpg[i],"_",settings["statistic_selector",1],1,"|","t-test","_",heatmaps_jpg[i],"_",settings["statistic_selector",1],1), heatmaps, ignore.case = T)]
+    heatmaps_sub_0<-heatmaps[grepl(str_c("anova_",heatmaps_jpg[i],"_",settings["padj_method",1],settings["padj_cutoff",1],"|","t-test","_",heatmaps_jpg[i],"_",settings["padj_method",1],settings["padj_cutoff",1]), heatmaps, ignore.case = T)]
+    heatmaps_sub_1<-heatmaps[grepl(str_c("anova_",heatmaps_jpg[i],"_",settings["padj_method",1],1,"|","t-test","_",heatmaps_jpg[i],"_",settings["padj_method",1],1), heatmaps, ignore.case = T)]
     
     report<-report%>%add_slide(layout="Comparison",master="Custom Design")
     report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",heatmaps_names[i]))
