@@ -197,4 +197,6 @@ runModac <- function(inputFile,
              all.comparison.labels = all.comparison.labels,
              outdir = outdir,
              template_pptx_path = template_pptx_path)
+  
+  writeLines(capture.output(sessionInfo()), paste0(outdir,"/sessionInfo.txt"))
 }
