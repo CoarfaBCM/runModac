@@ -6,6 +6,7 @@ plotHeatmap <- function(exprs,
                         outdir,
                         groupOrder,
                         groupColors,
+                        heatmapColorScale,
                         reportfile,
                         cutoffStat = "fdr",
                         cutoff = 0.25) {
@@ -60,7 +61,12 @@ plotHeatmap <- function(exprs,
     x<-abs(max(scaled_df))
     y<-abs(min(scaled_df))
     scale<-max(c(x,y))
-    col_heatmap <- colorRamp2(c((-scale)*.75, 0,(scale)*.75), c("BLUE2", "black", "yellow"))
+    # if (heatmap_color_scale == 1) {
+    #   heatmap_color_scale <- c("blue", "black", "yellow")
+    # } else {
+    #   heatmap_color_scale <- c("blue", "white", "red")
+    # }
+    col_heatmap <- colorRamp2(c((-scale)*.75, 0,(scale)*.75), heatmapColorScale)
     col_list <- list(group=groupColors)
     names(col_list$group) <- groupOrder
     
