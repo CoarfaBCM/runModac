@@ -25,7 +25,8 @@ runModac(inputFile = "example3-iqr/input/input.xlsx",
          outdir = "example3-iqr/results",
          project_title = "Project Report",
          project_subtitle = "Metabolomics Analysis [IQR]",
-         scriptPath = "~/Box Sync/runModac/R/")
+         scriptPath = "~/Box Sync/runModac/R/",
+         heatmap_color_scale = c("blue","white","red"))
 
 # example4-prenormalized-nodummy
 runModac(inputFile = "example4-prenormalized-nodummy/input/input.xlsx",
