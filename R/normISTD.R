@@ -24,7 +24,7 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   
   # checking if cv meets user specified cv cutoff
   if(cv > settings["cv_cutoff_internal_standard",1]) {
-    stop(paste0("cv = ", round(cv,2), " > cv cuttoff = ", settings["cv_cutoff_internal_standard",1]))
+    stop(paste0("For ",mymethod,", ",colnames(inputdf)[ncol(inputdf)]," CV = ", round(cv,2), " > CV cuttoff = ", settings["cv_cutoff_internal_standard",1]))
   }
   
   # plotting ISTD
