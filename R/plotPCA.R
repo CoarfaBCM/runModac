@@ -1,4 +1,11 @@
-plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, samplesAreRows = F) {
+plotPCA <- function(exprs,
+                    meta,
+                    outdir,
+                    groupColors,
+                    suffix = NULL,
+                    label = T,
+                    labSize = 2,
+                    samplesAreRows = F) {
   
   # Loading required packages and installing ones not present
   list.of.packages <- c("ggfortify", "openxlsx")
@@ -37,18 +44,24 @@ plotPCA <- function(exprs, meta, outdir, suffix = NULL, label = T, labSize = 2, 
   saveFile <- paste0("pca",suffix,".pdf")
   write.xlsx(pcaRaw, paste(outdir,gsub("pdf","xlsx",saveFile),sep="/"), overwrite = T)
   pdf(paste(outdir,saveFile,sep="/"))
-  print(autoplot(pcaRaw, data = meta, colour = colnames(meta)[1]))
+  a <- autoplot(pcaRaw, data = meta, colour = colnames(meta)[1]) + 
+    scale_color_manual(values = groupColors)
+  print(a)
   if (label) {
-    print(autoplot(pcaRaw,
-                   data = meta,
-                   colour = colnames(meta)[1],
-                   label = T,
-                   label.size = labSize))
+    a <- autoplot(pcaRaw,
+                  data = meta,
+                  colour = colnames(meta)[1],
+                  label = T,
+                  label.size = labSize) +
+      scale_color_manual(values = groupColors)
+    print(a)
   }
   dev.off()
   
   saveFile <- paste0("pca",suffix,".jpg")
   jpeg(paste(outdir,saveFile,sep="/"), quality = 1)
-  print(autoplot(pcaRaw, data = meta, colour = colnames(meta)[1]))
+  a <- autoplot(pcaRaw, data = meta, colour = colnames(meta)[1]) + 
+    scale_color_manual(values = groupColors)
+  print(a)
   dev.off()
 }
