@@ -103,8 +103,18 @@ runModac <- function(inputFile,
     myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),]
     
     # PCA plot
-    plotPCA(exprs = myexprs.raw, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_raw_",mycomparison), samplesAreRows = T)
-    plotPCA(exprs = myexprs.norm, meta = mymeta, outdir = paste0(outdir, "/pca"), suffix = paste0("_norm_",mycomparison), samplesAreRows = T)
+    plotPCA(exprs = myexprs.raw,
+            meta = mymeta,
+            outdir = paste0(outdir, "/pca"),
+            suffix = paste0("_raw_",mycomparison),
+            groupColors = col_list$group[mygroups],
+            samplesAreRows = T)
+    plotPCA(exprs = myexprs.norm,
+            meta = mymeta,
+            outdir = paste0(outdir, "/pca"),
+            suffix = paste0("_norm_",mycomparison),
+            groupColors = col_list$group[mygroups],
+            samplesAreRows = T)
     
     settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
     fcType <- settings["fc_type",1]
