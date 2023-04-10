@@ -31,7 +31,7 @@ runModac(inputFile = "~/Box Sync/runModac/example3-iqr/input/input.xlsx",
 # example4-prenormalized-nodummy
 runModac(inputFile = "~/Box Sync/runModac/example4-prenormalized-nodummy/input/input.xlsx",
          comparisonsFile = "~/Box Sync/runModac/example4-prenormalized-nodummy/input/comparisons.xlsx",
-         type = "metabolomics",
+         type = "none",
          outdir = "~/Box Sync/runModac/example4-prenormalized-nodummy/results",
          project_title = "Project Report",
          project_subtitle = "Metabolomics Analysis [prenormalized]",

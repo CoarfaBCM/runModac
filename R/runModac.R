@@ -27,23 +27,23 @@ runModac <- function(inputFile,
   
   print(cat("##### Preprocessing started #####\n\n"))
   source(paste0(scriptPath,"/preProcess.R"))
-  if (type == "metabolomics") {
-    exprsdf <- preProcess(inputFile = inputFile,
-                               comparisonsFile = comparisonsFile,
-                               outdir = outdir,
-                               scriptPath = scriptPath,
-                               samplesAreRows = samplesAreRows) 
-  } else if (type == "rppa") {
+  if (type == "rppa") {
     source(paste0(scriptPath,"/rppaAggr.R"))
     rppaAggr(inputFile = inputFile,
-                  outdir = myoutdir,
-                  geneNames = F,
-                  sampleIDRow = sampleIDRow)
+             outdir = myoutdir,
+             geneNames = F,
+             sampleIDRow = sampleIDRow)
     exprsdf <- preProcess(inputFile = paste0(myoutdir, "/aggregate_data.xlsx"),
-                               comparisonsFile = comparisonsFile,
-                               outdir = outdir,
-                               scriptPath = scriptPath,
-                               samplesAreRows = T)
+                          comparisonsFile = comparisonsFile,
+                          outdir = outdir,
+                          scriptPath = scriptPath,
+                          samplesAreRows = T)
+  } else {
+    exprsdf <- preProcess(inputFile = inputFile,
+                          comparisonsFile = comparisonsFile,
+                          outdir = outdir,
+                          scriptPath = scriptPath,
+                          samplesAreRows = samplesAreRows)
   }
   print(cat("##### Preprocessing complete #####\n\n"))
   
