@@ -173,6 +173,17 @@ runModac <- function(inputFile,
                       statType = settings["padj_method",1],
                       statCutoff = settings["padj_cutoff",1])
     }
+    
+    # volcano plots
+    source(paste0(scriptPath,"/plotVolcano.R"))
+    if (fcType == "log2" & mytest == "t-test") {
+      plotVolcano(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+                  myComparison = mycomparison,
+                  outDir = paste0(outdir, "/volcano_plots/"),
+                  fcCutoff = as.numeric(settings["linear_fc_cutoff",1]),
+                  padjCutoff = as.numeric(settings["padj_cutoff",1]),
+                  padjMethod = settings["padj_method",1])
+    }
     # heatmaps
     source(paste0(scriptPath,"/plotHeatmap.R"))
     plotHeatmap(exprs = myexprs.norm,
