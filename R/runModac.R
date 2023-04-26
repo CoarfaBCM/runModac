@@ -213,7 +213,7 @@ runModac <- function(inputFile,
   }
   
   source(paste0(scriptPath,"/createPptx.R"))
-  template_pptx_path <- paste0(gsub("/R$","/data",scriptPath),"/Project_Report_Template.pptx")
+  template_pptx_path <- paste0(gsub("/R$|/R/$","/data",scriptPath),"/Project_Report_Template.pptx")
   createPptx(project_title = project_title,
              project_subtitle = project_subtitle,
              exprsdf = exprsdf,
