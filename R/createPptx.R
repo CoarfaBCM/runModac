@@ -131,18 +131,12 @@ createPptx <- function(project_title = "Project Report",
   if(!is_empty(IS_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",IS_plots),title=c("Internal Standards Distribution"),names=IS_names)}
   
   # PCA ----------------------------------------------------------------
-  pcas<-list.files(path = paste0(outdir, "/pca/"), pattern="*.jpg")
-  pcas_jpg<-comparison[!grepl("anova|t-test", comparison, ignore.case = T)]
-  pcas_names<-pcas_jpg
-  pcas_jpg<-gsub(x=pcas_jpg,pattern = "\\+","\\\\\\+")
-  pcas_jpg<-gsub(x=pcas_jpg,pattern = "\\-","\\\\\\-")
-  
-  for(i in seq_along(pcas_jpg)){
-    pcas_norm<-pcas[grepl(str_c("pca_norm_", pcas_jpg[i]), pcas, ignore.case = T)]
-    pcas_raw<-pcas[grepl(str_c("pca_raw_", pcas_jpg[i]), pcas, ignore.case = T)]
+  for(i in seq_along(all.comparison.labels)){
+    pcas_norm<-paste0("pca_norm_",all.comparison.labels[i],".jpg")
+    pcas_raw<-paste0("pca_raw_",all.comparison.labels[i],".jpg")
     
     report<-report%>%add_slide(layout="Comparison",master="Custom Design")
-    report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",pcas_names[i]))
+    report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",all.comparison.labels[i]))
     report<-report%>%ph_with(location=ph_location_type("body", id=3),value="Normalized PCA")
     report<-report%>%ph_with(location=ph_location_type("body", id=1),value="Raw PCA")
     
