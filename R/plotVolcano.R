@@ -53,7 +53,7 @@ plotVolcano <- function(reportFile, myComparison, outDir, fcCutoff = 1.5, padjMe
       ggplot2::geom_vline(xintercept = -log2(fcCutoff), linetype = "dashed", colour = "blue", size = 0.75, alpha = 0.5)
     }} +
     ggplot2::labs(
-      caption = stringr::str_interp('${sum(data$highlight != "NS")}/${nrow(data)} signficant; ${sum(data$highlight == "down")} down, ${sum(data$highlight == "up")} up\n${padjMethod}: ${padjCutoff}, log2FC: ${round(fcCutoff, 2)}, linearFC: ${round(2 ^ fcCutoff, 2)}'),
+      caption = stringr::str_interp('${sum(data$highlight != "NS")}/${nrow(data)} signficant; ${sum(data$highlight == "down")} down, ${sum(data$highlight == "up")} up\n${padjMethod}: ${padjCutoff}, log2FC: ${round(log2(fcCutoff), 2)}, linearFC: ${round(fcCutoff, 2)}'),
       x = "log2FC",
       y = paste0("-log10(",padjMethod,")")
     ) +
@@ -78,7 +78,7 @@ plotVolcano <- function(reportFile, myComparison, outDir, fcCutoff = 1.5, padjMe
       }} +
       ggrepel::geom_text_repel(ggplot2::aes(label = mylabels), size = 3, show.legend = FALSE) +
       ggplot2::labs(
-        caption = stringr::str_interp('${sum(data$highlight != "NS")}/${nrow(data)} signficant; ${sum(data$highlight == "down")} down, ${sum(data$highlight == "up")} up\n${padjMethod}: ${padjCutoff}, log2FC: ${round(fcCutoff, 2)}, linearFC: ${round(2 ^ fcCutoff, 2)}'),
+        caption = stringr::str_interp('${sum(data$highlight != "NS")}/${nrow(data)} signficant; ${sum(data$highlight == "down")} down, ${sum(data$highlight == "up")} up\n${padjMethod}: ${padjCutoff}, log2FC: ${round(log2(fcCutoff), 2)}, linearFC: ${round(fcCutoff, 2)}'),
         x = "log2FC",
         y = paste0("-log10(",padjMethod,")")
       ) +

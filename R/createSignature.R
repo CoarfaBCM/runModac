@@ -14,6 +14,9 @@ createSignature <- function(reportFile, outFile, fcCutoff, statType, statCutoff)
     filter(.[[temp.idx.statType]] <= as.numeric(statCutoff)) %>% 
     filter(abs(.[[temp.idx.fc]]) >= as.numeric(fcCutoff)) %>% 
     select(1, all_of(temp.idx.fc))
+  
+  tempname <- sub("[.]txt$","",sub("sig.","",basename(outFile), ignore.case = T))
+  finaldf <- rbind(c(tempname,""),finaldf)
   write_tsv(x = finaldf, 
             file = outFile,
             col_names = FALSE)
