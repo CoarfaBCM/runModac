@@ -45,7 +45,8 @@ runModac <- function(inputFile,
       source(paste0(scriptPath,"/rppaAggr.R"))
       rppaAggr(inputFile = inputFile,
                outdir = myoutdir,
-               geneNames = F,
+               cv_cutoff = 0.25,
+               replacement = 1,
                sampleIDRow = sampleIDRow)
       exprsdf <- preProcess(inputFile = paste0(myoutdir, "/aggregate_data.xlsx"),
                             comparisonsFile = comparisonsFile,
