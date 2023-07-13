@@ -179,7 +179,7 @@ runModac <- function(inputFile,
         } else if (fcType == "linear") {
           temp_fc_cutoff <- settings["linear_fc_cutoff",1]
         }
-        outFileName <- paste0(outdir,"/Signature/Sig_",mycomparison,"_",fcType,"FC",temp_fc_cutoff,"_",settings["padj_method",1],settings["padj_cutoff",1],".txt")
+        outFileName <- paste0(outdir,"/Signature/Sig_",mycomparison,"_",fcType,"FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1],".txt")
         
         source(paste0(scriptPath,"/createSignature.R"))
         createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
