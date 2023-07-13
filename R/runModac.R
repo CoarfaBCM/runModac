@@ -84,6 +84,7 @@ runModac <- function(inputFile,
     dev.off()
     
     par(mar = mar.def)
+    dev.off()
     
     # reading in all comparisons
     all.comparisons <- excel_sheets(comparisonsFile)[-1]
