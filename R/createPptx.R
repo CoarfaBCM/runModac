@@ -168,8 +168,8 @@ createPptx <- function(project_title = "Project Report",
     
     report<-report%>%add_slide(layout="Comparison",master="Custom Design")
     report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",heatmaps_names[i]))
-    report<-report%>%ph_with(location=ph_location_type("body", id=3),value=paste0("Differential FDR<",settings["padj_cutoff",1]))
-    report<-report%>%ph_with(location=ph_location_type("body", id=1),value="Complete Set FDR=1")
+    report<-report%>%ph_with(location=ph_location_type("body", id=3),value=paste0("Differential ",settings["padj_method",1],"<",settings["padj_cutoff",1]))
+    report<-report%>%ph_with(location=ph_location_type("body", id=1),value=paste0("Complete Set ",settings["padj_method",1],"=1"))
     
     if(!is_empty(heatmaps_sub_0)){
       img<-readJPEG(paste0(outdir,"/heatmaps/",heatmaps_sub_0))
