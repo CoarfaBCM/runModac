@@ -8,23 +8,23 @@ runModac <- function(inputFile,
                      heatmap_color_scale = c("blue", "black", "yellow"),
                      scriptPath,
                      samplesAreRows = T,
-                     sampleIDRow = 2) {
+                     sampleIDRow = 2,
+                     min_signal = 0) {
   
   # Loading required packages and installing ones not present
   list.of.packages <- c("foreach","doParallel")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
-  # # Set the number of cores to use
-  # num_cores <- 4
-  # 
-  # # Register the parallel backend
-  # cl <- makeCluster(num_cores, outfile="")
-  # registerDoParallel(cl)
-  # 
-  # # Convert the loop to parallel using foreach
-  # foreach(i = 1) %dopar% {
-  for (i in 1) {
+  # Set the number of cores to use
+  num_cores <- 4
+
+  # Register the parallel backend
+  cl <- makeCluster(num_cores, outfile="")
+  registerDoParallel(cl)
+
+  # Convert the loop to parallel using foreach
+  foreach(i = 1) %dopar% {
     # Loading required packages and installing ones not present
     list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
     new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -119,6 +119,17 @@ runModac <- function(inputFile,
       myexprs.raw <- exprsdf[["raw"]][rownames(mymeta),]
       myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),]
       
+      # filtering out features for which none of the samples in this comparison have signal > min_signal
+      print(cat("##### Filtering out features by min_signal cutoff =", min_signal,"#####\n"))
+      if (min_signal == 0) {
+        keep <- apply(myexprs.raw,2,function(x){any(x>min_signal)})
+      } else {
+        keep <- apply(myexprs.raw,2,function(x){any(x>=min_signal)}) 
+      }
+      print(cat("##### Dropping", length(keep)-sum(keep),"out of the", length(keep)," total features #####\n"))
+      myexprs.raw <- myexprs.raw[,keep,drop=F]
+      myexprs.norm <- myexprs.norm[,keep,drop=F]
+      
       # PCA plot
       plotPCA(exprs = myexprs.raw,
               meta = mymeta,
@@ -179,7 +190,7 @@ runModac <- function(inputFile,
         if (fcType == "log2") {
           temp_fc_cutoff <- log2(as.numeric(settings["linear_fc_cutoff",1]))
         } else if (fcType == "linear") {
-          temp_fc_cutoff <- settings["linear_fc_cutoff",1]
+          temp_fc_cutoff <- as.numeric(settings["linear_fc_cutoff",1])
         }
         outFileName <- paste0(mycomparison,"_",fcType,"FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
         
@@ -266,6 +277,6 @@ runModac <- function(inputFile,
     writeLines(capture.output(sessionInfo()), paste0(outdir,"/sessionInfo.txt"))
   }
   
-  # # Stop the parallel backend
-  # stopCluster(cl)
+  # Stop the parallel backend
+  stopCluster(cl)
 }
