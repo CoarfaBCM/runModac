@@ -161,7 +161,7 @@ runModac <- function(inputFile,
       
       if (type == "rppa") {
         fullreport <- read.csv(paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".csv"), header = T, row.names = NULL)
-        tempdf <- read.xlsx(paste0(outdir,"/report/full_aggregate_data.xlsx"), rowNames = F)
+        tempdf <- read.xlsx(paste0(outdir,"/report/full_aggregate_data.xlsx"), sheet = "Norm_Median", rowNames = F)
         geneSymbols <- unname(sapply(fullreport$ID[-1], function(x){tempdf$GeneSymbol[tempdf$AB_name == x]}))
         finalreport <- data.frame(GeneSymbol = c(NA,geneSymbols), fullreport)
         names(finalreport)[2] <- "AB_name"
