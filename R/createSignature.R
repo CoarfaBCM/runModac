@@ -1,4 +1,4 @@
-createSignature <- function(reportFile, outFile, fcCutoff, statType, statCutoff) {
+createSignature <- function(reportFile, outFileName, outDir, fcCutoff, statType, statCutoff) {
   # Loading required packages and installing ones not present
   list.of.packages <- c("tidyverse")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -15,9 +15,15 @@ createSignature <- function(reportFile, outFile, fcCutoff, statType, statCutoff)
     filter(abs(.[[temp.idx.fc]]) >= as.numeric(fcCutoff)) %>% 
     select(1, all_of(temp.idx.fc))
   
-  tempname <- sub("[.]txt$","",sub("sig.","",basename(outFile), ignore.case = T))
-  finaldf <- rbind(c(tempname,""),finaldf)
-  write_tsv(x = finaldf, 
-            file = outFile,
-            col_names = FALSE)
+  # tempname <- basename(outFile) %>% sub("[.]txt$","",.) %>% sub("sig.","",.,ignore.case = T)
+  # finaldf <- rbind(c(tempname,""),finaldf)
+  # write_tsv(x = finaldf, 
+  #           file = outFile,
+  #           col_names = FALSE)
+  
+  finaldf <- rbind(c(outFileName,""),finaldf)
+  write_tsv(x = finaldf,
+            file = paste0(outDir,"/Sig_",outFileName,".txt"),
+            col_names = FALSE,
+            na = "")
 }

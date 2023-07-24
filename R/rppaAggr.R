@@ -5,11 +5,13 @@ rppaAggr <- function(inputFile,
                      sampleIDRow = 2,
                      replacement = 1) {
   # Loading required packages and installing ones not present
-  list.of.packages <- c("openxlsx")
+  list.of.packages <- c("readxl","openxlsx")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
-  mydf <- read.xlsx(inputFile)
+  sheetName <- "Norm"
+  wb <- loadWorkbook(inputFile)
+  mydf <- read.xlsx(inputFile, sheet = sheetName)
   
   mygroups <- data.frame(colnames(mydf)[-c(1:5)], t(mydf[1,-c(1:5)]))
   names(mygroups) <- c("ID", "Sample")
@@ -71,9 +73,36 @@ rppaAggr <- function(inputFile,
   
   write.xlsx(list(rppa = newdf), paste0(outdir, "/aggregate_data.xlsx"), rowNames = F)
   newdf <- data.frame(newdf, row.names = 1, check.rows = F, check.names = F)
-  # rownames(cvdf.1) <- rownames(newdf)
+  rownames(cvdf.1) <- rownames(newdf)
   
   finaldf <- data.frame(GeneSymbol = mydf[,2], AB_name = colnames(newdf), t(newdf), check.rows = F, check.names = F)
-  # finaldf.cv <- data.frame(GeneSymbol = mydf[,2], AB_name = colnames(cvdf.1), t(cvdf.1), check.rows = F, check.names = F)
-  write.xlsx(list(rppa = finaldf), paste0(outdir, "/full_aggregate_data.xlsx"), rowNames = F)
+  finaldf.cv <- data.frame(GeneSymbol = mydf[,2], AB_name = colnames(cvdf.1), t(cvdf.1), check.rows = F, check.names = F)
+  # write.xlsx(list(rppa = finaldf), paste0(outdir, "/full_aggregate_data.xlsx"), rowNames = F)
+  
+  addWorksheet(wb,paste0(sheetName,"_Median"))
+  writeData(wb,paste0(sheetName,"_Median"),finaldf,rowNames = FALSE)
+  addStyle(wb = wb,
+           sheet = paste0(sheetName,"_Median"),
+           style = createStyle(numFmt = "0.00"),
+           cols = 3:ncol(finaldf.cv),
+           rows = 2:nrow(finaldf.cv),
+           gridExpand = T)
+  
+  addWorksheet(wb,paste0(sheetName,"_CV"))
+  writeData(wb,paste0(sheetName,"_CV"),finaldf.cv,rowNames = FALSE)
+  mystyle <- createStyle(fontColour = "#000000", bgFill = "#FFFF00")
+  conditionalFormatting(wb,
+                        paste0(sheetName,"_CV"),
+                        cols = 3:ncol(finaldf.cv),
+                        rows = 2:nrow(finaldf.cv),
+                        rule = paste0(">",cv_cutoff),
+                        style = mystyle)
+  addStyle(wb = wb,
+           sheet = paste0(sheetName,"_CV"),
+           style = createStyle(numFmt = "PERCENTAGE"),
+           cols = 3:ncol(finaldf.cv),
+           rows = 2:nrow(finaldf.cv),
+           gridExpand = T)
+  
+  saveWorkbook(wb,paste0(outdir, "/full_aggregate_data.xlsx"),overwrite = TRUE)
 }

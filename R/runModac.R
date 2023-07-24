@@ -15,15 +15,16 @@ runModac <- function(inputFile,
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
-  # Set the number of cores to use
-  num_cores <- 4
-  
-  # Register the parallel backend
-  cl <- makeCluster(num_cores, outfile="")
-  registerDoParallel(cl)
-  
-  # Convert the loop to parallel using foreach
-  foreach(i = 1) %dopar% {
+  # # Set the number of cores to use
+  # num_cores <- 4
+  # 
+  # # Register the parallel backend
+  # cl <- makeCluster(num_cores, outfile="")
+  # registerDoParallel(cl)
+  # 
+  # # Convert the loop to parallel using foreach
+  # foreach(i = 1) %dopar% {
+  for (i in 1) {
     # Loading required packages and installing ones not present
     list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
     new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -160,7 +161,7 @@ runModac <- function(inputFile,
       
       if (type == "rppa") {
         fullreport <- read.csv(paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".csv"), header = T, row.names = NULL)
-        tempdf <- read.xlsx(paste0(outdir,"/report/full_aggregate_data.xlsx"), rowNames = F)
+        tempdf <- read.xlsx(paste0(outdir,"/report/full_aggregate_data.xlsx"), sheet = "Norm_Median", rowNames = F)
         geneSymbols <- unname(sapply(fullreport$ID[-1], function(x){tempdf$GeneSymbol[tempdf$AB_name == x]}))
         finalreport <- data.frame(GeneSymbol = c(NA,geneSymbols), fullreport)
         names(finalreport)[2] <- "AB_name"
@@ -180,14 +181,38 @@ runModac <- function(inputFile,
         } else if (fcType == "linear") {
           temp_fc_cutoff <- settings["linear_fc_cutoff",1]
         }
-        outFileName <- paste0(outdir,"/Signature/Sig_",mycomparison,"_",fcType,"FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1],".txt")
+        outFileName <- paste0(mycomparison,"_",fcType,"FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
         
         source(paste0(scriptPath,"/createSignature.R"))
         createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
-                        outFile = outFileName,
+                        outFileName = outFileName,
+                        outDir = paste0(outdir,"/Signature/"),
                         fcCutoff = temp_fc_cutoff,
                         statType = settings["padj_method",1],
                         statCutoff = settings["padj_cutoff",1])
+        
+        if (type == "rppa") {
+          # For RPPA analysis, saving 1 signature file with antibody names and another with gene symbols
+          sigdf <- read_tsv(paste0(outdir,"/Signature/Sig_",outFileName,".txt"),
+                            col_names = F,
+                            show_col_types = FALSE)
+          tempName <- paste0(outFileName,"-AB")
+          tempFileName <- paste0(outdir,"/Signature/Sig_",tempName,".txt")
+          write_tsv(x = sigdf,
+                    file = tempFileName,
+                    col_names = FALSE)
+          
+          sigdf[1,1] <- tempName
+          
+          sigdf$X1[-1] <- unname(sapply(sigdf$X1[-1], function(x){tempdf$GeneSymbol[tempdf$AB_name == x]}))
+          
+          tempFileName <- paste0(outdir,"/Signature/Sig_",outFileName,".txt")
+          write_tsv(x = sigdf,
+                    file = tempFileName,
+                    col_names = FALSE,
+                    na = "")
+          
+        }
       }
       
       # volcano plots
@@ -241,6 +266,6 @@ runModac <- function(inputFile,
     writeLines(capture.output(sessionInfo()), paste0(outdir,"/sessionInfo.txt"))
   }
   
-  # Stop the parallel backend
-  stopCluster(cl)
+  # # Stop the parallel backend
+  # stopCluster(cl)
 }
