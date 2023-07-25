@@ -25,6 +25,7 @@ runModac <- function(inputFile,
 
   # Convert the loop to parallel using foreach
   foreach(i = 1) %dopar% {
+  # for (i in 1) {
     # Loading required packages and installing ones not present
     list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
     new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -200,7 +201,7 @@ runModac <- function(inputFile,
                         outDir = paste0(outdir,"/Signature/"),
                         fcCutoff = temp_fc_cutoff,
                         statType = settings["padj_method",1],
-                        statCutoff = settings["padj_cutoff",1])
+                        statCutoff = as.numeric(settings["padj_cutoff",1]))
         
         if (type == "rppa") {
           # For RPPA analysis, saving 1 signature file with antibody names and another with gene symbols
@@ -251,7 +252,7 @@ runModac <- function(inputFile,
                   heatmapColorScale = heatmap_color_scale,
                   reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                   cutoffStat = settings["padj_method",1],
-                  cutoff = settings["padj_cutoff",1],
+                  cutoff = as.numeric(settings["padj_cutoff",1]),
                   samplesAreRows = T)
       plotHeatmap(exprs = myexprs.norm,
                   meta = mymeta,
