@@ -85,7 +85,7 @@ rppaAggr <- function(inputFile,
            sheet = paste0(sheetName,"_Median"),
            style = createStyle(numFmt = "0.00"),
            cols = 3:ncol(finaldf.cv),
-           rows = 2:nrow(finaldf.cv),
+           rows = 2:(nrow(finaldf.cv)+1),
            gridExpand = T)
   
   addWorksheet(wb,paste0(sheetName,"_CV"))
@@ -94,14 +94,14 @@ rppaAggr <- function(inputFile,
   conditionalFormatting(wb,
                         paste0(sheetName,"_CV"),
                         cols = 3:ncol(finaldf.cv),
-                        rows = 2:nrow(finaldf.cv),
+                        rows = 2:(nrow(finaldf.cv)+1),
                         rule = paste0(">",cv_cutoff),
                         style = mystyle)
   addStyle(wb = wb,
            sheet = paste0(sheetName,"_CV"),
            style = createStyle(numFmt = "PERCENTAGE"),
            cols = 3:ncol(finaldf.cv),
-           rows = 2:nrow(finaldf.cv),
+           rows = 2:(nrow(finaldf.cv)+1),
            gridExpand = T)
   
   saveWorkbook(wb,paste0(outdir, "/full_aggregate_data.xlsx"),overwrite = TRUE)

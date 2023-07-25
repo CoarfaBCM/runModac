@@ -209,11 +209,14 @@ runModac <- function(inputFile,
                             show_col_types = FALSE)
           tempName <- paste0(outFileName,"-AB")
           tempFileName <- paste0(outdir,"/Signature/Sig_",tempName,".txt")
-          write_tsv(x = sigdf,
+          sigdf1 <- sigdf
+          sigdf1[1,1] <- tempName
+          write_tsv(x = sigdf1,
                     file = tempFileName,
-                    col_names = FALSE)
+                    col_names = FALSE,
+                    na = "")
           
-          sigdf[1,1] <- tempName
+          # sigdf[1,1] <- tempName
           
           sigdf$X1[-1] <- unname(sapply(sigdf$X1[-1], function(x){tempdf$GeneSymbol[tempdf$AB_name == x]}))
           
