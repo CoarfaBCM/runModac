@@ -1,9 +1,9 @@
 
 rppaAggr <- function(inputFile,
                      outdir,
-                     cv_cutoff = 0.25,
+                     cv_cutoff = NULL,
                      sampleIDRow = 2,
-                     replacement = 1) {
+                     replacement = NULL) {
   # Loading required packages and installing ones not present
   list.of.packages <- c("readxl","openxlsx")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -55,10 +55,13 @@ rppaAggr <- function(inputFile,
   newdf <- aggregate(. ~ Sample, data = tempdf, FUN = median)
   cvdf <- aggregate(. ~ Sample, data = tempdf, FUN = function(x){sd(x)/mean(x)})
   cvdf.1 <- cvdf[,-1]
-  if (!(is.null(replacement))) {
-    newdf.1 <- newdf[,-1]
-    newdf.1[cvdf.1 > cv_cutoff] <- replacement
-    newdf[,-1] <- newdf.1
+  
+  if (!(is.null(cv_cutoff))) {
+    if (!(is.null(replacement))) {
+      newdf.1 <- newdf[,-1]
+      newdf.1[cvdf.1 > cv_cutoff] <- replacement
+      newdf[,-1] <- newdf.1
+    } 
   }
   
   if (sampleIDRow == 1) {
