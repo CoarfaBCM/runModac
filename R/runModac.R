@@ -9,7 +9,7 @@ runModac <- function(inputFile,
                      scriptPath,
                      samplesAreRows = T,
                      sampleIDRow = 2,
-                     min_signal = 0) {
+                     min_signal = NULL) {
   
   # Loading required packages and installing ones not present
   list.of.packages <- c("foreach","doParallel")
@@ -121,15 +121,17 @@ runModac <- function(inputFile,
       myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),]
       
       # filtering out features for which none of the samples in this comparison have signal > min_signal
-      print(cat("##### Filtering out features by min_signal cutoff =", min_signal,"#####\n"))
-      if (min_signal == 0) {
-        keep <- apply(myexprs.raw,2,function(x){any(x>min_signal)})
-      } else {
-        keep <- apply(myexprs.raw,2,function(x){any(x>=min_signal)}) 
+      if (!(is.null(min_signal))) {
+        print(cat("##### Filtering out features by min_signal cutoff =", min_signal,"#####\n"))
+        if (min_signal == 0) {
+          keep <- apply(myexprs.raw,2,function(x){any(x>min_signal)})
+        } else {
+          keep <- apply(myexprs.raw,2,function(x){any(x>=min_signal)}) 
+        }
+        print(cat("##### Dropping", length(keep)-sum(keep),"out of the", length(keep)," total features #####\n"))
+        myexprs.raw <- myexprs.raw[,keep,drop=F]
+        myexprs.norm <- myexprs.norm[,keep,drop=F] 
       }
-      print(cat("##### Dropping", length(keep)-sum(keep),"out of the", length(keep)," total features #####\n"))
-      myexprs.raw <- myexprs.raw[,keep,drop=F]
-      myexprs.norm <- myexprs.norm[,keep,drop=F]
       
       # PCA plot
       plotPCA(exprs = myexprs.raw,
