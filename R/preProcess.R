@@ -33,7 +33,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     }
     
     if(log2tr & any(inputdf == 0)) {
-      print(cat("##### Replacing", sum(is.na(inputdf)),"zeros with 1 #####\n"))
+      print(cat("##### Replacing", sum(inputdf == 0),"zeros with 1 #####\n"))
       inputdf[inputdf == 0] <- 1 
     }
     
