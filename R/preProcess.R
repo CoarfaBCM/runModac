@@ -21,10 +21,20 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     myoutdir <- paste(outdir,"QA_plots",sep = "/")
     
     # reading in expression data per method
-    inputdf <- suppressMessages(data.frame(read_excel(inputFile, trim_ws = T, sheet = mymethod), row.names = 1, check.rows = F, check.names = F))
+    inputdf <- suppressMessages(data.frame(read_excel(inputFile, trim_ws = T, sheet = mymethod, na = c("","N/A","NA")), row.names = 1, check.rows = F, check.names = F))
     
     if (!samplesAreRows) {
        inputdf <- t(inputdf)
+    }
+    
+    if(any(is.na(inputdf))) {
+      print(cat("##### Replacing", sum(is.na(inputdf)),"NAs with 1 #####\n"))
+      inputdf[is.na(inputdf)] <- 1 
+    }
+    
+    if(log2tr & any(inputdf == 0)) {
+      print(cat("##### Replacing", sum(is.na(inputdf)),"zeros with 1 #####\n"))
+      inputdf[inputdf == 0] <- 1 
     }
     
     if (normalization == "none") {
