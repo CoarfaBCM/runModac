@@ -127,6 +127,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     dev.off()
     
     par(mar = mar.def)
+    dev.off()
   }
   
   # merging all methods
