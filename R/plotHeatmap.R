@@ -44,11 +44,20 @@ plotHeatmap <- function(exprs,
   mygrouping <- factor(meta[,1], levels = groupOrder)
   exprdf <- data.frame(t(exprs), check.rows = F, check.names = F)
   
-  if (grepl("fdr", cutoffStat, ignore.case = T)) {
-    sigFeatures <- read.csv(reportfile) %>% filter(fdr <= cutoff) %>% select(1)
-  } else if (grepl("pval", cutoffStat, ignore.case = T)) {
-    sigFeatures <- read.csv(reportfile) %>% filter(pval <= cutoff) %>% select(1)
+  if(cutoff == 1) {
+    if (grepl("fdr", cutoffStat, ignore.case = T)) {
+      sigFeatures <- read.csv(reportfile) %>% filter(fdr <= cutoff) %>% select(1)
+    } else if (grepl("pval", cutoffStat, ignore.case = T)) {
+      sigFeatures <- read.csv(reportfile) %>% filter(pval <= cutoff) %>% select(1)
+    }
+  } else {
+    if (grepl("fdr", cutoffStat, ignore.case = T)) {
+      sigFeatures <- read.csv(reportfile) %>% filter(fdr < cutoff) %>% select(1)
+    } else if (grepl("pval", cutoffStat, ignore.case = T)) {
+      sigFeatures <- read.csv(reportfile) %>% filter(pval < cutoff) %>% select(1)
+    }
   }
+  
   if (nrow(sigFeatures) == 0) {
     print(cat("No significant features at", cutoffStat, "<", cutoff,"\n"))
   } else {

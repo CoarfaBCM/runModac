@@ -1,3 +1,4 @@
+MaleMHFD_over_MaleMRD_log2FC0_fdr0.25	
 Glutamine	-0.112093240308016
 Lysine	-0.123421653864813
 Arginine	-0.12774696992389

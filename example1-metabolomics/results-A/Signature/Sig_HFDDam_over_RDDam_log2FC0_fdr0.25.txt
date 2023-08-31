@@ -1,3 +1,4 @@
+HFDDam_over_RDDam_log2FC0_fdr0.25	
 Glutamine	-0.204079038514291
 Phenyl alanine	-0.229236698191954
 Histidine	-0.231103594609702
