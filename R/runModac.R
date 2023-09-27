@@ -159,31 +159,21 @@ runModac <- function(inputFile,
               groupColors = col_list$group[mygroups],
               samplesAreRows = T)
       
-      settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
-      fcType <- settings["fc_type",1]
-      if (settings["log2transform",1]) {
-        # stat test
-        myStatTest(exprs = myexprs.norm,
-                   meta = mymeta,
-                   test = mytest,
-                   comparison = mycomparison,
-                   group.ctrl.test = mygroups,
-                   group.colors = col_list$group[mygroups],
-                   fc.type = "log2",
-                   samplesAreRows = T,
-                   outdir = paste0(outdir, "/report/"))
-      } else {
-        # stat test
-        myStatTest(exprs = myexprs.norm,
-                   meta = mymeta,
-                   test = mytest,
-                   comparison = mycomparison,
-                   group.ctrl.test = mygroups,
-                   group.colors = col_list$group[mygroups],
-                   fc.type = fcType,
-                   samplesAreRows = T,
-                   outdir = paste0(outdir, "/report/")) 
-      }
+      settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 9, col_names = F), row.names = 1, check.rows = F))
+      input_space <- settings["input_data_space",1]
+      diff_space <- settings["differential_analysis_space",1]
+      compute_log2fc <- as.logical(settings["compute_log2fc",1])
+      
+      myStatTest(exprs = myexprs.norm,
+                 meta = mymeta,
+                 test = mytest,
+                 comparison = mycomparison,
+                 group.ctrl.test = mygroups,
+                 group.colors = col_list$group[mygroups],
+                 diff.space = diff_space,
+                 compute.log2fc = compute_log2fc,
+                 samplesAreRows = T,
+                 outdir = paste0(outdir, "/report/"))
       
       if (type == "rppa") {
         fullreport <- read.csv(paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".csv"), header = T, row.names = NULL)
@@ -202,12 +192,13 @@ runModac <- function(inputFile,
         createRNK(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                   outFile = paste0(outdir,"/Rnk/Rnk_",mycomparison,".rnk"))
         
-        if (fcType == "log2") {
+        if (compute_log2fc) {
           temp_fc_cutoff <- log2(as.numeric(settings["linear_fc_cutoff",1]))
-        } else if (fcType == "linear") {
+          outFileName <- paste0(mycomparison,"_log2FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+        } else {
           temp_fc_cutoff <- as.numeric(settings["linear_fc_cutoff",1])
+          outFileName <- paste0(mycomparison,"_linearFC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
         }
-        outFileName <- paste0(mycomparison,"_",fcType,"FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
         
         source(paste0(scriptPath,"/createSignature.R"))
         createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
@@ -245,8 +236,9 @@ runModac <- function(inputFile,
       }
       
       # volcano plots
+      # if compute_log2fc is F, volcano plots should not be generated and a message should be displayed
       source(paste0(scriptPath,"/plotVolcano.R"))
-      if (fcType == "log2" & mytest == "t-test") {
+      if (compute_log2fc & mytest == "t-test") {
         plotVolcano(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
                     myComparison = mycomparison,
                     outDir = paste0(outdir, "/volcano_plots/"),

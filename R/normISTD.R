@@ -1,10 +1,14 @@
 normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   
-  istd.info <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", skip = 8), check.rows = F))
+  istd.info <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", skip = 9), check.rows = F))
   rownames(istd.info) <- istd.info$tab
   istd.info <- istd.info[,-1, drop=F]
-  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
-  log2tr <- as.logical(settings["log2transform",1])
+  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 9, col_names = F), row.names = 1, check.rows = F))
+  input_space <- settings["input_data_space",1]
+  diff_space <- settings["differential_analysis_space",1]
+  
+  log2TF <- input_space == "linear" & diff_space == "log2"
+  linearTF <- input_space == "log2" & diff_space == "linear"
   
   # saving qc row start idx
   qc.idx <- as.numeric(settings["QC_row",1])-1
@@ -30,8 +34,14 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   # plotting ISTD
   temp <- inputdf[,ncol(inputdf)]
   
-  if(log2tr) {
+  # log2 transform
+  if(log2TF){
     temp <- log2(temp)
+  }
+  
+  #linear transform
+  if(linearTF){
+    temp <- 2^temp
   }
   
   pdf(paste(myoutdir,paste0("dIS_dist_",mymethod,".pdf"),sep = "/"))
@@ -62,8 +72,13 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   inputdf[1:(ncol(inputdf)-1)] <- apply(inputdf[1:(ncol(inputdf)-1)], 2, function(x){x/inputdf[,ncol(inputdf)]})
   
   # log2 transform
-  if(log2tr){
+  if(log2TF){
     inputdf <- log2(inputdf)
+  }
+  
+  #linear transform
+  if(linearTF){
+    inputdf <- 2^inputdf
   }
   
   # dropping istd

@@ -5,10 +5,14 @@ createSignature <- function(reportFile, outFileName, outDir, fcCutoff, statType,
   if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
   data <- read.csv(reportFile, check.names = F)
-  data <- data[order(data[,grepl("fc",colnames(data))], decreasing = T),]
   
   temp.idx.statType <- which(grepl(statType, colnames(data), ignore.case = T))
-  temp.idx.fc <- which(grepl("fc", colnames(data), ignore.case = T))
+  if (any(grepl("log2",colnames(data), ignore.case = T))){
+    temp.idx.fc <- which(grepl("log2", colnames(data), ignore.case = T))
+  } else {
+    temp.idx.fc <- which(grepl("fc", colnames(data), ignore.case = T))
+  }
+  data <- data[order(data[,temp.idx.fc], decreasing = T),]
   
   finaldf <- data %>% 
     filter(.[[temp.idx.statType]] <= as.numeric(statCutoff)) %>% 

@@ -1,9 +1,13 @@
 preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAreRows = T) {
   
   all.methods <- excel_sheets(inputFile)
-  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
+  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 9, col_names = F), row.names = 1, check.rows = F))
   normalization <- settings["normalization",1]
-  log2tr <- as.logical(settings["log2transform",1])
+  input_space <- settings["input_data_space",1]
+  diff_space <- settings["differential_analysis_space",1]
+  
+  log2TF <- input_space == "linear" & diff_space == "log2"
+  linearTF <- input_space == "log2" & diff_space == "linear"
   
   all.exprs.norm <- list()
   all.exprs.raw <- list()
@@ -12,7 +16,8 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
   all.qc.num <- c()
   
   print(cat("##### Normalization type:", normalization, "#####\n"))
-  print(cat("##### Log2 transform:", log2tr, "#####\n"))
+  print(cat("##### Input data space:", input_space, "#####\n"))
+  print(cat("##### Differential analysis space:", diff_space, "#####\n"))
   
   for (i in seq_along(all.methods)) {
     mymethod <- all.methods[i]
@@ -24,7 +29,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     inputdf <- suppressMessages(data.frame(read_excel(inputFile, trim_ws = T, sheet = mymethod, na = c("","N/A","NA")), row.names = 1, check.rows = F, check.names = F))
     
     if (!samplesAreRows) {
-       inputdf <- t(inputdf)
+      inputdf <- t(inputdf)
     }
     
     if(any(is.na(inputdf))) {
@@ -32,17 +37,24 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       inputdf[is.na(inputdf)] <- 1 
     }
     
-    if(log2tr & any(inputdf == 0)) {
-      print(cat("##### Replacing", sum(inputdf == 0),"zeros with 1 #####\n"))
+    if(log2TF & any(inputdf == 0)) {
+      print(cat("##### Since data has to be log2 transformed, replacing", sum(inputdf == 0),"zeros with 1 #####\n"))
       inputdf[inputdf == 0] <- 1 
     }
     
     if (normalization == "none") {
       all.exprs.raw[[i]] <- inputdf
+      
       # log2 transform
-      if(log2tr){
+      if(log2TF){
         inputdf <- log2(inputdf)
       }
+      
+      #linear transform
+      if(linearTF){
+        inputdf <- 2^inputdf
+      }
+      
       all.exprs.norm[[i]] <- inputdf
       
       all.istd <- 0
@@ -57,9 +69,9 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       if (normalization == "istd") {
         source(paste0(scriptPath,"/normISTD.R"))
         tempdf <- normISTD(inputdf = inputdf,
-                            comparisonsFile = comparisonsFile,
-                            myoutdir = myoutdir,
-                            mymethod = mymethod)
+                           comparisonsFile = comparisonsFile,
+                           myoutdir = myoutdir,
+                           mymethod = mymethod)
         
         inputdf <- tempdf$data
         all.istd <- c(all.istd, tempdf$istd)
@@ -70,7 +82,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       if (normalization == "iqr") {
         source(paste0(scriptPath,"/normIQR.R"))
         tempdf <- normIQR(inputdf = inputdf,
-                           comparisonsFile = comparisonsFile)
+                          comparisonsFile = comparisonsFile)
         
         inputdf <- tempdf$data
         all.istd <- 0
