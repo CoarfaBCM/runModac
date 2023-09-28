@@ -99,8 +99,14 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
               scale_y_continuous(n.breaks = 25, labels = function(x) {
                 scales::label_number_si(accuracy = 0.1)(x)
               }) +
-              theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1), legend.position = "bottom", legend.box = "vertical", legend.margin = margin(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                    panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+              theme(axis.text.x = element_blank(),
+                    legend.position = "bottom",
+                    legend.box = "vertical",
+                    legend.margin = margin(),
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    panel.background = element_blank(),
+                    axis.line = element_line(colour = "black")) +
               labs(title = paste0(mymethod, " liver control distribution"), x = 'Compounds', y = 'Liver control'))
       dev.off()
       
@@ -110,8 +116,14 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
               scale_y_continuous(n.breaks = 25, labels = function(x) {
                 scales::label_number_si(accuracy = 0.1)(x)
               }) +
-              theme(axis.text.x = element_text(angle = 90, vjust = 1, hjust = 1), legend.position = "bottom", legend.box = "vertical", legend.margin = margin(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-                    panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+              theme(axis.text.x = element_blank(),
+                    legend.position = "bottom",
+                    legend.box = "vertical",
+                    legend.margin = margin(),
+                    panel.grid.major = element_blank(),
+                    panel.grid.minor = element_blank(),
+                    panel.background = element_blank(),
+                    axis.line = element_line(colour = "black")) +
               labs(title = paste0(mymethod, " liver control distribution"), x = 'Compounds', y = 'Liver control'))
       dev.off()
       

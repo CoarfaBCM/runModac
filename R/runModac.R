@@ -106,8 +106,8 @@ runModac <- function(inputFile,
     # Expanding color set to color 36 groups
     # library(Polychrome)
     # unname(createPalette(36,  c("#ff0000", "#00ff00", "#0000ff")))
-    colors_set <- c("#FD001C", "#16FF00", "#0022FB", "#63422A", "#FE16D4", "#00F7FF",
-                    "#F1E500", "#D7B0FD", "#FD8E3D", "#008E3B", "#CD1660", "#D5E6D7",
+    colors_set <- c("#FD001C", "#16FF00", "#0000FF", "#63422A", "#FE16D4", "#00F7FF",
+                    "#F1E500", "#D7B0FD", "#FD8E3D", "#008E3B", "#CD1660", "#000099",
                     "#CB0DF7", "#225C75", "#FC9DBD", "#22AAFE", "#920D83", "#FCCB95",
                     "#512EA3", "#ACF25F", "#00FFC4", "#94352A", "#858B22", "#A2D1F5",
                     "#FC83FD", "#946A8E", "#22A593", "#F2532A", "#FDBB0D", "#D63B9A",
