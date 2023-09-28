@@ -1,12 +1,21 @@
 normIQR <- function(inputdf, comparisonsFile) {
   
-  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 8, col_names = F), row.names = 1, check.rows = F))
-  log2tr <- as.logical(settings["log2transform",1])
+  settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 9, col_names = F), row.names = 1, check.rows = F))
   qc.idx <- as.numeric(settings["QC_row",1])-1
+  input_space <- settings["input_data_space",1]
+  diff_space <- settings["differential_analysis_space",1]
+  
+  log2TF <- input_space == "linear" & diff_space == "log2"
+  linearTF <- input_space == "log2" & diff_space == "linear"
   
   # log2 transform
-  if(log2tr){
+  if(log2TF){
     inputdf <- log2(inputdf)
+  }
+  
+  #linear transform
+  if(linearTF){
+    inputdf <- 2^inputdf
   }
   
   all.medians <- unname(apply(inputdf,1,median))

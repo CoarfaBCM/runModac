@@ -16,7 +16,10 @@ createPptx <- function(project_title = "Project Report",
   if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
   normalization <- settings["normalization",1]
-  log2tr <- as.logical(settings["log2transform",1])
+  input_space <- settings["input_data_space",1]
+  diff_space <- settings["differential_analysis_space",1]
+  log2TF <- input_space == "linear" & diff_space == "log2"
+  linearTF <- input_space == "log2" & diff_space == "linear"
   
   sample_number<-nrow(exprsdf[["norm"]]) #Not including the quality control samples
   liver_sample_number<-exprsdf$qc_num #"Quality Control" samples
@@ -40,8 +43,10 @@ createPptx <- function(project_title = "Project Report",
                                  " was normalized by IQR")
                         })
   } else if (normalization == "none") {
-    if (log2tr) {
-      norm_method<-c("Data was log2 transformed")
+    if (log2TF) {
+      norm_method<-c("Data was transformed to log2 space")
+    } else if (linearTF) {
+      norm_method<-c("Data was transformed to linear space") 
     } else {
       norm_method<-c("Data was prenormalized") 
     }

@@ -1,4 +1,13 @@
-myStatTest <- function(exprs, meta, test, comparison, group.ctrl.test, group.colors, outdir, fc.type, samplesAreRows = F) {
+myStatTest <- function(exprs,
+                       meta,
+                       test,
+                       comparison,
+                       group.ctrl.test,
+                       group.colors,
+                       outdir,
+                       diff.space,
+                       compute.log2fc = T,
+                       samplesAreRows = F) {
   
   if (is.character(exprs)) {
     exprs <- read.csv(exprs, row.names = 1, check.names = F)
@@ -27,20 +36,32 @@ myStatTest <- function(exprs, meta, test, comparison, group.ctrl.test, group.col
                                                      t.test(x~meta[,1])$p.value,
                                                      1)})
     
-    if (fc.type == "log2") {
-      all.fc <- apply(exprs[meta[,1] == group.ctrl.test[2], ], 2, mean) - apply(exprs[meta[,1] == group.ctrl.test[1], ], 2, mean)
-    } else if (fc.type == "linear") {
-      all.fc <- apply(exprs[meta[,1] == group.ctrl.test[2], ], 2, mean)/apply(exprs[meta[,1] == group.ctrl.test[1], ], 2, mean)
+    if (diff.space == "log2") {
+      log2FC <- apply(exprs[meta[,1] == group.ctrl.test[2], ], 2, mean) - apply(exprs[meta[,1] == group.ctrl.test[1], ], 2, mean)
+      linearFC <- 2^log2FC
+    } else if (diff.space == "linear") {
+      linearFC <- apply(exprs[meta[,1] == group.ctrl.test[2], ], 2, mean)/apply(exprs[meta[,1] == group.ctrl.test[1], ], 2, mean)
+      if (compute.log2fc) {
+        log2FC <- log2(linearFC) 
+      }
     }
     
     all.fdr <- p.adjust(all.pvals, method = "BH") # FDR correction
     
-    reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, fc = all.fc, row.names = NULL)
-    names(reportdf)[names(reportdf) == "fc"] <- paste0(fc.type,"_fc")
+    if (compute.log2fc) {
+      reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, linear_fc = linearFC, log2_fc = log2FC, row.names = NULL)
+    } else {
+      reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, linear_fc = linearFC, row.names = NULL)
+    }
+    
     reportdf <- reportdf[order(reportdf$fdr),]
     write.csv(reportdf, paste0(outdir,"/Report_",test,"_",comparison,".csv"), row.names = F)
     
-    fullreportdf <- rbind(c(NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
+    if (compute.log2fc) {
+      fullreportdf <- rbind(c(NA,NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
+    } else {
+      fullreportdf <- rbind(c(NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
+    }
     write.csv(fullreportdf, paste0(outdir,"/FullReport_",test,"_",comparison,".csv"), row.names = F)
   } else if (test == "anova") {
     all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
