@@ -1,0 +1,70 @@
+feature,sample,value
+Alanine,Liver_QC_3,-0.0891805218637395
+Alanine,Liver_QC_4,-0.0630231499308107
+Alanine,Liver_QC_5,-0.0823317181490008
+Arginine,Liver_QC_3,0.722099729491544
+Arginine,Liver_QC_4,0.618313842821654
+Arginine,Liver_QC_5,0.611941191109075
+Asparagine,Liver_QC_3,-0.587683614892769
+Asparagine,Liver_QC_4,-0.488608732697493
+Asparagine,Liver_QC_5,-0.513494062128073
+Aspartic acid,Liver_QC_3,-0.2356316799206
+Aspartic acid,Liver_QC_4,-0.193658819718473
+Aspartic acid,Liver_QC_5,-0.210188876098197
+Betaine,Liver_QC_3,0.28513284064912
+Betaine,Liver_QC_4,0.193343962324909
+Betaine,Liver_QC_5,0.226988542292202
+Citrulline,Liver_QC_3,-0.376338886034977
+Citrulline,Liver_QC_4,-0.3620820795804
+Citrulline,Liver_QC_5,-0.421758135673978
+Cystine,Liver_QC_3,-1.22589211002557
+Cystine,Liver_QC_4,-1.24851115921798
+Cystine,Liver_QC_5,-1.25773186922088
+Glutamic acid,Liver_QC_3,0.508003827822022
+Glutamic acid,Liver_QC_4,0.519317197254442
+Glutamic acid,Liver_QC_5,0.499246134368704
+Glutamine,Liver_QC_3,0.79104366656432
+Glutamine,Liver_QC_4,0.774879698411335
+Glutamine,Liver_QC_5,0.791897519858465
+Glutaric acid,Liver_QC_3,-1.83363599310924
+Glutaric acid,Liver_QC_4,-1.83487567641506
+Glutaric acid,Liver_QC_5,-1.86008667323008
+Glycine,Liver_QC_3,-0.43120063153987
+Glycine,Liver_QC_4,-0.455854798649865
+Glycine,Liver_QC_5,-0.448226997031592
+Histidine,Liver_QC_3,0.409301831132237
+Histidine,Liver_QC_4,0.348380384578429
+Histidine,Liver_QC_5,0.332870069890466
+Homoserine/Threonine,Liver_QC_3,0.12694759966691
+Homoserine/Threonine,Liver_QC_4,0.0871656359804163
+Homoserine/Threonine,Liver_QC_5,0.0728885138257641
+Isoleucine/Leucine,Liver_QC_3,1.00847685825151
+Isoleucine/Leucine,Liver_QC_4,0.915579414061882
+Isoleucine/Leucine,Liver_QC_5,0.924319779517352
+Lysine,Liver_QC_3,1.00243112726607
+Lysine,Liver_QC_4,0.932908916646724
+Lysine,Liver_QC_5,0.94048896743034
+Methionine,Liver_QC_3,-0.724361710380304
+Methionine,Liver_QC_4,-0.766750941354046
+Methionine,Liver_QC_5,-0.802266366537837
+Ornithine,Liver_QC_3,-0.178510835110382
+Ornithine,Liver_QC_4,-0.162271735157232
+Ornithine,Liver_QC_5,-0.231677007726463
+Phenyl alanine,Liver_QC_3,0.591135101320402
+Phenyl alanine,Liver_QC_4,0.54567448333191
+Phenyl alanine,Liver_QC_5,0.539032806471632
+Proline,Liver_QC_3,0.614031110407752
+Proline,Liver_QC_4,0.564977433872305
+Proline,Liver_QC_5,0.57667035967912
+Serine,Liver_QC_3,0
+Serine,Liver_QC_4,0
+Serine,Liver_QC_5,0
+Tryptophan,Liver_QC_3,0.0427117743087762
+Tryptophan,Liver_QC_4,0.0089494661303246
+Tryptophan,Liver_QC_5,0.0727130579694066
+Tyrosine,Liver_QC_3,-0.903663839940347
+Tyrosine,Liver_QC_4,-0.941545585368891
+Tyrosine,Liver_QC_5,-0.969753013834914
+Valine,Liver_QC_3,-0.469660439317705
+Valine,Liver_QC_4,-0.479153520763785
+Valine,Liver_QC_5,-0.522733252361962
