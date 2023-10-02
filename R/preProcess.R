@@ -93,39 +93,33 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       # Plotting liver QC samples
       temp <- pivot_longer(data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),])),cols = !feature, names_to = "sample")
       
+      myplot <- ggplot(temp, aes(x = feature, y = value, group = feature, colour = sample)) +
+        geom_point(size = 2, alpha = 0.75) +
+        scale_y_continuous(n.breaks = 25, labels = function(x) {
+          scales::label_number_si(accuracy = 0.1)(x)
+        }) +
+        theme(axis.text.x = element_blank(),
+              legend.position = "bottom",
+              legend.box = "vertical",
+              legend.margin = margin(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank(),
+              axis.line = element_line(colour = "black")) +
+        labs(title = paste0(mymethod, " liver control distribution"), x = 'Compounds', y = 'Liver control')
+      browser()
       pdf(paste(myoutdir,paste0("liver_dist_",mymethod,".pdf"),sep = "/"))
-      print(ggplot(temp, aes(x = feature, y = value, group = feature, colour = sample)) +
-              geom_point(size = 2, alpha = 0.75) +
-              scale_y_continuous(n.breaks = 25, labels = function(x) {
-                scales::label_number_si(accuracy = 0.1)(x)
-              }) +
-              theme(axis.text.x = element_blank(),
-                    legend.position = "bottom",
-                    legend.box = "vertical",
-                    legend.margin = margin(),
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    panel.background = element_blank(),
-                    axis.line = element_line(colour = "black")) +
-              labs(title = paste0(mymethod, " liver control distribution"), x = 'Compounds', y = 'Liver control'))
+      print(myplot)
       dev.off()
       
       jpeg(paste(myoutdir,paste0("liver_dist_",mymethod,".jpg"),sep = "/"))
-      print(ggplot(temp, aes(x = feature, y = value, group = feature, colour = sample)) +
-              geom_point(size = 2, alpha = 0.75) +
-              scale_y_continuous(n.breaks = 25, labels = function(x) {
-                scales::label_number_si(accuracy = 0.1)(x)
-              }) +
-              theme(axis.text.x = element_blank(),
-                    legend.position = "bottom",
-                    legend.box = "vertical",
-                    legend.margin = margin(),
-                    panel.grid.major = element_blank(),
-                    panel.grid.minor = element_blank(),
-                    panel.background = element_blank(),
-                    axis.line = element_line(colour = "black")) +
-              labs(title = paste0(mymethod, " liver control distribution"), x = 'Compounds', y = 'Liver control'))
+      print(myplot)
       dev.off()
+      
+      write.csv(myplot$data,
+                paste(myoutdir,paste0("liver_dist_",mymethod,".csv"),sep = "/"),
+                quote = F,
+                row.names = F)
       
       all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),] #dropping QC samples
     }

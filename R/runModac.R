@@ -1,10 +1,10 @@
 
 runModac <- function(inputFile,
                      comparisonsFile,
-                     type = "metabolomics",
+                     type,
                      outdir = "results",
-                     project_title = "Project Report",
-                     project_subtitle = "Metabolomics Analysis",
+                     project_title = "Report",
+                     project_subtitle = "by",
                      heatmap_color_scale = c("blue", "black", "yellow"),
                      scriptPath,
                      samplesAreRows = T,
@@ -16,16 +16,16 @@ runModac <- function(inputFile,
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
-  # Set the number of cores to use
-  num_cores <- 4
-
-  # Register the parallel backend
-  cl <- makeCluster(num_cores, outfile="")
-  registerDoParallel(cl)
-
-  # Convert the loop to parallel using foreach
-  foreach(i = 1) %dopar% {
-  # for (i in 1) {
+  # # Set the number of cores to use
+  # num_cores <- 4
+  # 
+  # # Register the parallel backend
+  # cl <- makeCluster(num_cores, outfile="")
+  # registerDoParallel(cl)
+  # 
+  # # Convert the loop to parallel using foreach
+  # foreach(i = 1) %dopar% {
+  for (i in 1) {
     # Loading required packages and installing ones not present
     list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
     new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -287,6 +287,6 @@ runModac <- function(inputFile,
     writeLines(capture.output(sessionInfo()), paste0(outdir,"/sessionInfo.txt"))
   }
   
-  # Stop the parallel backend
-  stopCluster(cl)
+  # # Stop the parallel backend
+  # stopCluster(cl)
 }
