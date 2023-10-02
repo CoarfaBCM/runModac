@@ -107,7 +107,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
               panel.background = element_blank(),
               axis.line = element_line(colour = "black")) +
         labs(title = paste0(mymethod, " liver control distribution"), x = 'Compounds', y = 'Liver control')
-      browser()
+      
       pdf(paste(myoutdir,paste0("liver_dist_",mymethod,".pdf"),sep = "/"))
       print(myplot)
       dev.off()
