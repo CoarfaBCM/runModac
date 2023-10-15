@@ -121,7 +121,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
                 quote = F,
                 row.names = F)
       
-      all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),] #dropping QC samples
+      all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),,drop=F] #dropping QC samples
     }
     
     pdf(paste0(myoutdir,"/boxplot_",mymethod,".pdf"))
