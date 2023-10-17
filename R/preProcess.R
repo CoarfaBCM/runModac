@@ -168,8 +168,13 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
   
   myoutdir <- paste(outdir,"report",sep = "/")
   
-  write.csv(exprsdf.raw, paste0(myoutdir,"/raw_data.csv"), quote = F, row.names = T)
-  write.csv(exprsdf.norm, paste0(myoutdir,"/normalized_data.csv"), quote = F, row.names = T)
+  write.table(data.frame(ID=rownames(exprsdf.raw), exprsdf.raw, check.names = F), paste0(myoutdir,"/raw_data.xls"), quote = F, row.names = F, sep = "\t", col.names = T)
+  write.table(data.frame(ID=rownames(exprsdf.norm), exprsdf.norm, check.names = F), paste0(myoutdir,"/normalized_data.xls"), quote = F, row.names = F, sep = "\t", col.names = T)
   
-  return(list(raw=exprsdf.raw, norm=exprsdf.norm, istd = all.istd, cv = all.cv, qc_num=all.qc.num, methods = all.methods))
+  return(list(raw = exprsdf.raw,
+              norm=exprsdf.norm,
+              istd = all.istd,
+              cv = all.cv,
+              qc_num = all.qc.num,
+              methods = all.methods))
 }
