@@ -287,6 +287,14 @@ runModac <- function(inputFile,
     writeLines(capture.output(sessionInfo()), paste0(outdir,"/sessionInfo.txt"))
   }
   
+  # Check if "Rplots.pdf" exists in the current directory
+  file_path <- file.path(getwd(), "Rplots.pdf")
+  
+  # If the file exists, delete it
+  if (file.exists(file_path)) {
+    file.remove(file_path)
+  }
+  
   # Stop the parallel backend
   stopCluster(cl)
 }
