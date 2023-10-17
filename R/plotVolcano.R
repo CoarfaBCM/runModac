@@ -21,7 +21,7 @@ plotVolcano <- function(reportFile, myComparison, outDir, fcCutoff = 1.5, padjMe
   data$direction[data[,"log2_fc"] > log2(fcCutoff) & data[,padjMethod] < padjCutoff] <- "up"
   data$direction[data[,"log2_fc"] < -log2(fcCutoff) & data[,padjMethod] < padjCutoff] <- "down"
   
-  mycolors <- c("red", "black", "blue")
+  mycolors <- c("red", "grey30", "blue")
   names(mycolors) <- c("up","NS", "down")
   
   mylabels <- data$ID
