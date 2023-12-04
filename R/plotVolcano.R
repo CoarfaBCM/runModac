@@ -39,7 +39,7 @@ plotVolcano <- function(reportFile, myComparison, outDir, fcCutoff = 1.5, padjMe
     ggplot2::geom_point(alpha = 0.5, size = 2) +
     ggplot2::scale_color_manual(values=mycolors) +
     ggplot2::scale_y_continuous(n.breaks = 10, labels = function(x) {
-      scales::label_number_si(accuracy = 0.05)(x)
+      scales::label_number(accuracy = 0.05)(x)
     }) +
     {if(any(-log10(data[[padjMethod]]) > -log10(padjCutoff))) {
       ggplot2::geom_hline(yintercept = -log10(padjCutoff), linetype = "dashed", colour = "goldenrod", size = 0.75, alpha = 0.5)
