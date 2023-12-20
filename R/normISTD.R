@@ -69,7 +69,11 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   dev.off()
   
   # ISTD normalization
-  inputdf[1:(ncol(inputdf)-1)] <- apply(inputdf[1:(ncol(inputdf)-1)], 2, function(x){x/inputdf[,ncol(inputdf)]})
+  if(input_space == "linear") {
+    inputdf[1:(ncol(inputdf)-1)] <- apply(inputdf[1:(ncol(inputdf)-1)], 2, function(x){x/inputdf[,ncol(inputdf)]}) 
+  } else if(input_space == "log2") {
+    inputdf[1:(ncol(inputdf)-1)] <- apply(inputdf[1:(ncol(inputdf)-1)], 2, function(x){x - inputdf[,ncol(inputdf)]}) 
+  }
   
   # log2 transform
   if(log2TF){
