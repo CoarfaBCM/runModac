@@ -18,6 +18,10 @@ rppaAggr <- function(inputFile,
   
   tempIDs <- mydf$X1[-1]
   mydf <- data.frame(mydf[-1,-c(1,3,5)], row.names = NULL, check.rows = F, check.names = F)
+  
+  # trimming any trailing whitespaces from antibody names and gene symbols
+  mydf[,c(1:2)] <- apply(mydf[,c(1:2)], 2, trimws)
+  
   mydf[,1] <- gsub("_R_V","",mydf[,1])
   mydf[,2] <- unname(sapply(mydf[,2], function(x){strsplit(x, ",")[[1]][1]}))
   
@@ -54,32 +58,23 @@ rppaAggr <- function(inputFile,
   tempdf <- data.frame(Sample = mygroups[,sampleIDRow], t(data.frame(mydf[,-2], row.names = 1, check.rows = F, check.names = F)), check.names = F, check.rows = F)
   newdf <- aggregate(. ~ Sample, data = tempdf, FUN = median)
   cvdf <- aggregate(. ~ Sample, data = tempdf, FUN = function(x){sd(x)/mean(x)})
-  cvdf.1 <- cvdf[,-1]
   
-  if (!(is.null(cv_cutoff))) {
-    if (!(is.null(replacement))) {
-      newdf.1 <- newdf[,-1]
-      newdf.1[cvdf.1 > cv_cutoff] <- replacement
-      newdf[,-1] <- newdf.1
-    } 
+  newdf <- data.frame(newdf, row.names = 1, check.rows = F, check.names = F)
+  newdf <- newdf[unique(mygroups[,sampleIDRow]),]
+  
+  cvdf <- data.frame(cvdf, row.names = 1, check.rows = F, check.names = F)
+  cvdf <- cvdf[unique(mygroups[,sampleIDRow]),]
+  
+  if (!(is.null(replacement)) & !(is.null(cv_cutoff))) {
+    newdf[cvdf > cv_cutoff] <- replacement
   }
   
-  # if (sampleIDRow == 1) {
-  #   uniqueNames <- data.frame(ID = unname(sapply(mygroups$ID, function(x){strsplit(x,"[.]")[[1]][1]})),
-  #                             sample = mygroups$Sample)
-  #   uniqueNames <- uniqueNames[!duplicated(uniqueNames$sample),]
-  #   uniqueNames <- uniqueNames[match(newdf$Sample, uniqueNames$sample),]
-  #   if (identical(newdf$Sample, uniqueNames$sample)) {
-  #     newdf$Sample <- uniqueNames$ID 
-  #   }
-  # }
-  
-  write.xlsx(list(rppa = newdf), paste0(outdir, "/aggregate_data.xlsx"), rowNames = F)
-  newdf <- data.frame(newdf, row.names = 1, check.rows = F, check.names = F)
-  rownames(cvdf.1) <- rownames(newdf)
+  write.xlsx(list(rppa = data.frame(Samples=rownames(newdf),newdf,check.rows = F,check.names = F)),
+             paste0(outdir, "/aggregate_data.xlsx"),
+             rowNames = F)
   
   finaldf <- data.frame(GeneSymbol = mydf[,2], AB_name = colnames(newdf), t(newdf), check.rows = F, check.names = F)
-  finaldf.cv <- data.frame(GeneSymbol = mydf[,2], AB_name = colnames(cvdf.1), t(cvdf.1), check.rows = F, check.names = F)
+  finaldf.cv <- data.frame(GeneSymbol = mydf[,2], AB_name = colnames(cvdf), t(cvdf), check.rows = F, check.names = F)
   # write.xlsx(list(rppa = finaldf), paste0(outdir, "/full_aggregate_data.xlsx"), rowNames = F)
   
   addWorksheet(wb,paste0(sheetName,"_Median"))
