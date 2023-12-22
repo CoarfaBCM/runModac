@@ -47,7 +47,7 @@ runModac <- function(inputFile,
       source(paste0(scriptPath,"/rppaAggr.R"))
       rppaAggr(inputFile = inputFile,
                outdir = myoutdir,
-               cv_cutoff = NULL,
+               cv_cutoff = 0.25,
                replacement = NULL,
                sampleIDRow = sampleIDRow)
       exprsdf <- preProcess(inputFile = paste0(myoutdir, "/aggregate_data.xlsx"),
