@@ -53,14 +53,14 @@ createPptx <- function(project_title = "Project Report",
   }
   
   if (all(grepl("_over_", all.comparison.labels, ignore.case = T))) {
-    comparison <- c("t-test",
+    comparison <- c("t-test (2 tailed, assuming unequal variance)",
                     all.comparison.labels)
     comparison_levels <- c(2, rep(3, length(all.comparison.labels)))
   } else {
     myflag <- grepl("_over_", all.comparison.labels, ignore.case = T)
-    comparison <- c("t-test",
+    comparison <- c("t-test (2 tailed, assuming unequal variance)",
                     all.comparison.labels[myflag],
-                    "anova",
+                    "anova (analysis of variance)",
                     all.comparison.labels[!(myflag)])
     comparison_levels <- c(2, rep(3, length(all.comparison.labels[myflag])),
                            2, rep(3, length(all.comparison.labels[!(myflag)])))
