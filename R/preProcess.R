@@ -43,6 +43,9 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     }
     
     if (normalization == "none") {
+      # convert all columns to numeric
+      inputdf[] <- lapply(inputdf, as.numeric)
+      
       all.exprs.raw[[i]] <- inputdf
       
       # log2 transform
