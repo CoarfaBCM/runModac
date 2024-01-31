@@ -32,6 +32,9 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       inputdf <- t(inputdf)
     }
     
+    # convert all columns to numeric
+    inputdf[] <- lapply(inputdf, as.numeric)
+    
     if(any(is.na(inputdf))) {
       print(cat("##### Replacing", sum(is.na(inputdf)),"NAs with 1 #####\n"))
       inputdf[is.na(inputdf)] <- 1 
@@ -43,8 +46,6 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     }
     
     if (normalization == "none") {
-      # convert all columns to numeric
-      inputdf[] <- lapply(inputdf, as.numeric)
       
       all.exprs.raw[[i]] <- inputdf
       
