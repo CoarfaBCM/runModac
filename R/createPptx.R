@@ -44,9 +44,9 @@ createPptx <- function(project_title = "Project Report",
                         })
   } else if (normalization == "none") {
     if (log2TF) {
-      norm_method<-c("Data was transformed to log2 space")
+      norm_method<-c("Data was prenormalized and transformed to log2 space")
     } else if (linearTF) {
-      norm_method<-c("Data was transformed to linear space") 
+      norm_method<-c("Data was prenormalized and transformed to linear space") 
     } else {
       norm_method<-c("Data was prenormalized") 
     }
@@ -103,7 +103,7 @@ createPptx <- function(project_title = "Project Report",
                 comparison)
   } else {
     ul_levels <- c(1,2,
-                   1,rep(2,number_of_methods),
+                   1,2,
                    1,comparison_levels)
     ul_str <- c("Samples",
                 paste0(sample_number," experimental samples"),
@@ -142,8 +142,22 @@ createPptx <- function(project_title = "Project Report",
     
     report<-report%>%add_slide(layout="Comparison",master="Custom Design")
     report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",all.comparison.labels[i]))
-    report<-report%>%ph_with(location=ph_location_type("body", id=3),value="Normalized PCA")
-    report<-report%>%ph_with(location=ph_location_type("body", id=1),value="Raw PCA")
+    
+    if (normalization == "none") {
+      if (log2TF) {
+        temp1 <- "Log2 Transformed PCA"
+      } else if (linearTF) {
+        temp1 <- "Linear Transformed PCA"
+      } else {
+        temp1 <- "Prenormalized PCA"
+      }
+      temp2 <- "Prenormalized PCA"
+    } else {
+      temp1 <- "Normalized PCA"
+      temp2 <- "Raw PCA"
+    }
+    report<-report%>%ph_with(location=ph_location_type("body", id=3),value=temp1)
+    report<-report%>%ph_with(location=ph_location_type("body", id=1),value=temp2)
     
     if(!is_empty(pcas_norm)){
       img<-readJPEG(paste0(outdir,"/pca/",pcas_norm))
