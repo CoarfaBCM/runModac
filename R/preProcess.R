@@ -29,7 +29,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     inputdf <- suppressMessages(data.frame(read_excel(inputFile, trim_ws = T, sheet = mymethod, na = c("","N/A","NA")), row.names = 1, check.rows = F, check.names = F))
     
     if (!samplesAreRows) {
-      inputdf <- t(inputdf)
+      inputdf <- data.frame(t(inputdf), check.rows = F, check.names = F)
     }
     
     # convert all columns to numeric
