@@ -32,17 +32,24 @@ myStatTest <- function(exprs,
   createDir(outdir)
   
   if (test == "t-test") {
+    test.group <- strsplit(comparison,"_over_")[[1]][1]
+    ctrl.group <- strsplit(comparison,"_over_")[[1]][2]
+    
+    if ((length(test.group) == 0)|(length(ctrl.group) == 0)) {
+      stop(cat("\n######## ERROR WITH COMPARISON NAME:", comparison,"########",
+               "\n######## T-test comparison name format is 'test_over_control' ########\n"))
+    }
     all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
                                                      t.test(x~meta[,1])$p.value,
                                                      1)})
     
     if (diff.space == "log2") {
       # here, data is already transformed to log2 space in the pre processing step
-      log2FC <- apply(exprs[meta[,1] == group.ctrl.test[2], ], 2, mean) - apply(exprs[meta[,1] == group.ctrl.test[1], ], 2, mean)
+      log2FC <- apply(exprs[meta[,1] == test.group, ], 2, mean) - apply(exprs[meta[,1] == ctrl.group, ], 2, mean)
       linearFC <- 2^log2FC
     } else if (diff.space == "linear") {
       # here, data is already transformed to linear space in the pre processing step
-      linearFC <- apply(exprs[meta[,1] == group.ctrl.test[2], ], 2, mean)/apply(exprs[meta[,1] == group.ctrl.test[1], ], 2, mean)
+      linearFC <- apply(exprs[meta[,1] == test.group, ], 2, mean)/apply(exprs[meta[,1] == ctrl.group, ], 2, mean)
       if (compute.log2fc) {
         log2FC <- log2(linearFC) 
       }
