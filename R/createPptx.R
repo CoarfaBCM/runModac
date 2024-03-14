@@ -77,7 +77,7 @@ createPptx <- function(project_title = "Project Report",
       width<-dim(img)[2]/96
       
       report<-report%>%add_slide(layout="Title and Content", master="Custom Design")
-      report<-report%>%ph_with(value=str_c(title,": ",names[i]), location=ph_location_type("title"))
+      report<-report%>%ph_with(value=str_c(title,names[i]), location=ph_location_type("title"))
       report<-report%>%ph_with(value=external_img(files[i]),ph_location(top=1,left=0.5,width=width,height=height))
     }
   }
@@ -131,9 +131,9 @@ createPptx <- function(project_title = "Project Report",
   IS_names<-str_replace(IS_plots,"dIS_dist_","")%>%str_replace(".jpg","")
   
   
-  if(!is_empty(qa_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",qa_plots),title=c("QA plots"),names=qa_names)}
-  if(!is_empty(liver_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",liver_plots),title=c("Liver Control"),names=liver_names)}
-  if(!is_empty(IS_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",IS_plots),title=c("Internal Standards Distribution"),names=IS_names)}
+  if(!is_empty(qa_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",qa_plots),title=c("QA plots: "),names=qa_names)}
+  if(!is_empty(liver_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",liver_plots),title=c("Liver Control: "),names=liver_names)}
+  if(!is_empty(IS_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",IS_plots),title=c("Internal Standards Distribution: "),names=IS_names)}
   
   # PCA ----------------------------------------------------------------
   for(i in seq_along(all.comparison.labels)){
@@ -170,6 +170,21 @@ createPptx <- function(project_title = "Project Report",
       height<-dim(img)[1]/96
       width<-dim(img)[2]/96
       report<-report%>%ph_with(value=external_img(paste0(outdir,"/pca/",pcas_raw)),ph_location(left = 0.5,top = 1.56,width = 4.5,height = 4.25/width*height))
+    }
+  }
+  
+  # Volcano plots ----------------------------------------------------------------
+  volcanoplots<-list.files(path = paste0(outdir, "/volcano_plots/"), pattern="*.jpg")
+  volcanoplots_jpg<-comparison[grepl("_over_", comparison, ignore.case = T)]
+  volcanoplots_names<-volcanoplots_jpg
+  volcanoplots_jpg<-gsub(x=volcanoplots_jpg,pattern = "\\+","\\\\\\+")
+  volcanoplots_jpg<-gsub(x=volcanoplots_jpg,pattern = "\\-","\\\\\\-")
+  
+  for(i in seq_along(volcanoplots_jpg)){
+    volcanoplots_sub<-volcanoplots[grepl(volcanoplots_jpg[i], volcanoplots, ignore.case = T)]
+    
+    if(!is_empty(volcanoplots_sub)){
+      ctrl_ppt(report=report,files=paste0(outdir,"/volcano_plots/",volcanoplots_sub),title=c("Comparison "),names=volcanoplots_names[i])
     }
   }
   
