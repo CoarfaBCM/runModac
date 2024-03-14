@@ -46,15 +46,21 @@ runModac <- function(inputFile,
     if (type == "rppa") {
       source(paste0(scriptPath,"/rppaAggr.R"))
       rppaAggr(inputFile = inputFile,
-               outdir = myoutdir,
+               outputFile = paste0(myoutdir, "/full_aggregate_data.xlsx"),
+               sampleIDRow = sampleIDRow,
                cv_cutoff = 0.25,
-               replacement = NULL,
-               sampleIDRow = sampleIDRow)
+               replace.cvcutoff = NULL,
+               replace.na = NULL)
+      
+      tempdf <- read.xlsx(paste0(myoutdir, "/full_aggregate_data.xlsx"), sheet="Norm_Median")
+      write.xlsx(list(rppa = data.frame(tempdf[,-c(1,3,4)],check.rows = F,check.names = F)),
+                 paste0(myoutdir, "/aggregate_data.xlsx"),
+                 rowNames = F)
       exprsdf <- preProcess(inputFile = paste0(myoutdir, "/aggregate_data.xlsx"),
                             comparisonsFile = comparisonsFile,
                             outdir = outdir,
                             scriptPath = scriptPath,
-                            samplesAreRows = T)
+                            samplesAreRows = F)
     } else {
       exprsdf <- preProcess(inputFile = inputFile,
                             comparisonsFile = comparisonsFile,
