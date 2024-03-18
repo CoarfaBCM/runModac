@@ -38,6 +38,9 @@ rppaAggr <- function(inputFile,
     mydf$AB_name <- gsub("_R$","",mydf$AB_name)
     mydf$AB_name <- gsub("_M$","",mydf$AB_name)
     mydf$Gene_ID <- unname(sapply(mydf$Gene_ID, function(x){strsplit(x, ",")[[1]][1]}))
+    
+    # trimming any trailing whitespaces from antibody IDs, antibody names and gene symbols
+    mydf[,c(1:3)] <- apply(mydf[,c(1:3)], 2, trimws)
 
     # Function to add ID to duplicate names
     makeUniqueNames <- function(IDs, names) {
