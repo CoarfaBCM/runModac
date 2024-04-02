@@ -83,20 +83,37 @@ plotHeatmap <- function(exprs,
     ha1 <- HeatmapAnnotation(df = meta, show_annotation_name = T, annotation_height = .25,
                             col = col_list)
     
-    ht<-Heatmap(matrix = as.matrix(scaled_df),
-                top_annotation = ha1,
-                clustering_distance_rows = "euclidean",
-                name = "z-score",
-                column_names_side = "bottom",
-                col=col_heatmap,
-                cluster_columns = F,
-                cluster_rows = T,
-                row_names_gp = gpar(fontsize=6),
-                rect_gp = gpar(col = NA, lty = 1, lwd = 1),
-                column_names_gp = gpar(fontsize=6),
-                show_row_dend = T,
-                km=1,
-                heatmap_legend_param = list(legend_direction = "horizontal",legend_width = unit(1, "in")))
+    if (nrow(scaled_df) > 100) {
+      ht<-Heatmap(matrix = as.matrix(scaled_df),
+                  top_annotation = ha1,
+                  clustering_distance_rows = "euclidean",
+                  name = "z-score",
+                  column_names_side = "bottom",
+                  col=col_heatmap,
+                  cluster_columns = F,
+                  cluster_rows = T,
+                  show_row_names = F,
+                  rect_gp = gpar(col = NA, lty = 1, lwd = 1),
+                  column_names_gp = gpar(fontsize=6),
+                  show_row_dend = T,
+                  km=1,
+                  heatmap_legend_param = list(legend_direction = "horizontal",legend_width = unit(1, "in"))) 
+    } else {
+      ht<-Heatmap(matrix = as.matrix(scaled_df),
+                  top_annotation = ha1,
+                  clustering_distance_rows = "euclidean",
+                  name = "z-score",
+                  column_names_side = "bottom",
+                  col=col_heatmap,
+                  cluster_columns = F,
+                  cluster_rows = T,
+                  row_names_gp = gpar(fontsize=6),
+                  rect_gp = gpar(col = NA, lty = 1, lwd = 1),
+                  column_names_gp = gpar(fontsize=6),
+                  show_row_dend = T,
+                  km=1,
+                  heatmap_legend_param = list(legend_direction = "horizontal",legend_width = unit(1, "in")))
+    }
     
     pdf(paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".pdf"), height = 14, width = 10)
     draw(ht, heatmap_legend_side="bottom")
