@@ -22,7 +22,7 @@ createPptx <- function(project_title = "Project Report",
   linearTF <- input_space == "log2" & diff_space == "linear"
   
   sample_number<-nrow(exprsdf[["norm"]]) #Not including the quality control samples
-  liver_sample_number<-exprsdf$qc_num #"Quality Control" samples
+  qc_sample_number<-exprsdf$qc_num #"Quality Control" samples
   number_of_species<-ncol(exprsdf[["norm"]]) #metabolites or lipids, not including the internal standards
   number_of_methods<-length(exprsdf$methods)
   
@@ -96,7 +96,7 @@ createPptx <- function(project_title = "Project Report",
                    1,comparison_levels)
     ul_str <- c("Samples",
                 paste0(sample_number," experimental samples"),
-                paste0(liver_sample_number," liver control samples"),
+                paste0(qc_sample_number," quality control samples"),
                 paste0("Total of ",number_of_species," features from ",number_of_methods," methods"),
                 norm_method,
                 "Comparisons performed",
@@ -125,14 +125,14 @@ createPptx <- function(project_title = "Project Report",
   
   qa_plots<-qa[grepl("boxplot_",qa,ignore.case = T)]
   qa_names<-str_replace(qa_plots,"boxplot_","")%>%str_replace(".jpg","")
-  liver_plots<-qa[grepl("liver_",qa,ignore.case = T)]
-  liver_names<-str_replace(liver_plots,"liver_dist_","")%>%str_replace(".jpg","")
+  qc_plots<-qa[grepl("qc_",qa,ignore.case = T)]
+  qc_names<-str_replace(qc_plots,"qc_dist_","")%>%str_replace(".jpg","")
   IS_plots<-qa[grepl("dIS",qa)]
   IS_names<-str_replace(IS_plots,"dIS_dist_","")%>%str_replace(".jpg","")
   
   
   if(!is_empty(qa_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",qa_plots),title=c("QA plots: "),names=qa_names)}
-  if(!is_empty(liver_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",liver_plots),title=c("Liver Control: "),names=liver_names)}
+  if(!is_empty(qc_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",qc_plots),title=c("Quality Control: "),names=qc_names)}
   if(!is_empty(IS_plots)){ctrl_ppt(report=report,files=paste0(outdir,"/QA_plots/",IS_plots),title=c("Internal Standards Distribution: "),names=IS_names)}
   
   # PCA ----------------------------------------------------------------

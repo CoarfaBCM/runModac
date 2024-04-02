@@ -94,36 +94,60 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
         all.qc.num <- tempdf$qc_num
       }
       
-      # Plotting liver QC samples
-      temp <- pivot_longer(data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),])),cols = !feature, names_to = "sample")
+      # Plotting QC samples
       
-      myplot <- ggplot(temp, aes(x = feature, y = value, group = feature, colour = sample)) +
-        geom_point(size = 2, alpha = 0.75) +
-        scale_y_continuous(n.breaks = 25, labels = function(x) {
-          scales::label_number_si(accuracy = 0.1)(x)
-        }) +
-        theme(axis.text.x = element_blank(),
-              legend.position = "bottom",
-              legend.box = "vertical",
-              legend.margin = margin(),
-              panel.grid.major = element_blank(),
-              panel.grid.minor = element_blank(),
-              panel.background = element_blank(),
-              axis.line = element_line(colour = "black")) +
-        labs(title = paste0(mymethod, " liver control distribution"), x = 'Compounds', y = 'Liver control')
+      # # OLD LIVER QC PLOTS CODE
+      # temp <- pivot_longer(data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),])),cols = !feature, names_to = "sample")
+      # myplot <- ggplot(temp, aes(x = feature, y = value, group = feature, colour = sample)) +
+      #   geom_point(size = 2, alpha = 0.75) +
+      #   scale_y_continuous(n.breaks = 25, labels = function(x) {
+      #     scales::label_number_si(accuracy = 0.1)(x)
+      #   }) +
+      #   theme(axis.text.x = element_blank(),
+      #         legend.position = "bottom",
+      #         legend.box = "vertical",
+      #         legend.margin = margin(),
+      #         panel.grid.major = element_blank(),
+      #         panel.grid.minor = element_blank(),
+      #         panel.background = element_blank(),
+      #         axis.line = element_line(colour = "black")) +
+      #   labs(title = paste0(mymethod, " quality control distribution"), x = 'Compounds', y = 'Quality control')
+      # 
+      # pdf(paste(myoutdir,paste0("qc_dist_",mymethod,".pdf"),sep = "/"))
+      # print(myplot)
+      # dev.off()
+      # 
+      # jpeg(paste(myoutdir,paste0("qc_dist_",mymethod,".jpg"),sep = "/"))
+      # print(myplot)
+      # dev.off()
+      # 
+      # write.csv(myplot$data,
+      #           paste(myoutdir,paste0("qc_dist_",mymethod,".csv"),sep = "/"),
+      #           quote = F,
+      #           row.names = F)
       
-      pdf(paste(myoutdir,paste0("liver_dist_",mymethod,".pdf"),sep = "/"))
-      print(myplot)
+      temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]))
+      
+      mar.def <- par()$mar
+      
+      pdf(paste(myoutdir,paste0("qc_dist_",mymethod,".pdf"),sep = "/"))
+      par(mar = mar.def + c(5,0,-3,0))
+      boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
+      dev.off()
+
+      jpeg(paste(myoutdir,paste0("qc_dist_",mymethod,".jpg"),sep = "/"))
+      par(mar = mar.def + c(5,0,-3,0))
+      boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
       dev.off()
       
-      jpeg(paste(myoutdir,paste0("liver_dist_",mymethod,".jpg"),sep = "/"))
-      print(myplot)
+      par(mar = mar.def)
       dev.off()
       
-      write.csv(myplot$data,
-                paste(myoutdir,paste0("liver_dist_",mymethod,".csv"),sep = "/"),
-                quote = F,
-                row.names = F)
+      write.table(temp,
+                  paste(myoutdir,paste0("qc_dist_",mymethod,".xls"),sep = "/"),
+                  sep = "\t",
+                  quote = F,
+                  row.names = F)
       
       all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),,drop=F] #dropping QC samples
     }
