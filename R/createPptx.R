@@ -90,7 +90,17 @@ createPptx <- function(project_title = "Project Report",
   # Project Overview --------------------------------------------------------
   report<-report%>%add_slide(layout="Title and Content", master="Custom Design")
   report<-report%>%ph_with(location=ph_location_type("title"),value="Project Overview")
-  if (normalization == "istd") {
+  if (qc_sample_number == 0) {
+    ul_levels <- c(1,2,
+                   1,2,
+                   1,comparison_levels)
+    ul_str <- c("Samples",
+                paste0(sample_number," experimental samples"),
+                paste0("Total of ",number_of_species," features from ",number_of_methods," methods"),
+                norm_method,
+                "Comparisons performed",
+                comparison)
+  } else {
     ul_levels <- c(1,2,2,
                    1,rep(2,number_of_methods),
                    1,comparison_levels)
@@ -101,18 +111,7 @@ createPptx <- function(project_title = "Project Report",
                 norm_method,
                 "Comparisons performed",
                 comparison)
-  } else {
-    ul_levels <- c(1,2,
-                   1,2,
-                   1,comparison_levels)
-    ul_str <- c("Samples",
-                paste0(sample_number," experimental samples"),
-                paste0("Total of ",number_of_species," features from ",number_of_methods," methods"),
-                norm_method,
-                "Comparisons performed",
-                comparison)
   }
-  
   ul <- unordered_list(
     level_list = ul_levels,
     str_list = ul_str
