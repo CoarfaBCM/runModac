@@ -213,60 +213,9 @@ rppaAggr <- function(inputFile,
     return(wb)
   }
   
-  fixQIsheets <- function(wb, sheetName) {
-    rawdf <- readWorkbook(wb, sheet = sheetName, colNames = F)
-    
-    # trimming any trailing whitespaces from antibody IDs, antibody names and gene symbols
-    rawdf[,c(1:5)] <- apply(rawdf[,c(1:5)], 2, trimws)
-    
-    # removing trailing characters other than antibody name
-    # adding antibody species column
-    rawdf$X2 <- gsub("_V$|_$","", rawdf$X2)
-    
-    AB_species <- rep("",nrow(rawdf))
-    AB_species[1] <- "AB_species"
-    AB_species[grepl("_R$", rawdf$X2)] <- "rabbit"
-    AB_species[grepl("_M$", rawdf$X2)] <- "mouse"
-    
-    rawdf$X2 <- gsub("_R$","",rawdf$X2)
-    rawdf$X2 <- gsub("_M$","",rawdf$X2)
-    
-    # trimming any trailing whitespaces from antibody IDs, antibody names and gene symbols
-    rawdf[,c(1:5)] <- apply(rawdf[,c(1:5)], 2, trimws)
-    
-    rawdf$AB_species <- AB_species
-    rawdf <- rawdf[, c(1,2,ncol(rawdf),3:(ncol(rawdf)-1))]
-    
-    writeData(wb, sheetName, rawdf, rowNames = F, colNames = F)
-    
-    # bold the first column
-    addStyle(wb = wb,
-             sheet = sheetName,
-             style = createStyle(textDecoration = "bold"),
-             cols = 1,
-             rows = 1:nrow(rawdf),
-             gridExpand = T)
-    
-    # bold the first row
-    addStyle(wb = wb,
-             sheet = sheetName,
-             style = createStyle(textDecoration = "bold"),
-             cols = 1:ncol(rawdf),
-             rows = 1,
-             gridExpand = T)
-    
-    return(wb)
-  }
-  
   all.sheets <- excel_sheets(inputFile)
   wb <- loadWorkbook(inputFile)
   if(!("Norm_Median" %in% all.sheets)) {
-    # adding AB_species column to QI and mouse_QI sheet
-    wb <- fixQIsheets(wb = wb, sheetName = "QI")
-    if (any(grepl("mouse",all.sheets,ignore.case = T))) {
-      wb <- fixQIsheets(wb = wb, sheetName = "Mouse_QI")
-    }
-    
     wb1 <- tempfunc(inputFile = inputFile,
                     wb = wb,
                     sheetName = "Norm",
@@ -274,17 +223,6 @@ rppaAggr <- function(inputFile,
                     sampleIDRow = sampleIDRow,
                     replace.cvcutoff = replace.cvcutoff,
                     replace.na = replace.na)
-    
-    if (any(grepl("mouse",all.sheets,ignore.case = T))) {
-      wb1 <- tempfunc(inputFile = inputFile,
-                      wb = wb1,
-                      sheetName = "Mouse_Norm",
-                      cv_cutoff = cv_cutoff,
-                      sampleIDRow = sampleIDRow,
-                      replace.cvcutoff = replace.cvcutoff,
-                      replace.na = replace.na)
-    }
-    
     saveWorkbook(wb1,outputFile,overwrite = TRUE)
   } else {
     saveWorkbook(wb1,outputFile,overwrite = TRUE)
