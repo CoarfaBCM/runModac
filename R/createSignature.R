@@ -27,7 +27,7 @@ createSignature <- function(reportFile, outFileName, outDir, fcCutoff, statType,
   
   finaldf <- rbind(c(outFileName,""),finaldf)
   write_tsv(x = finaldf,
-            file = paste0(outDir,"/Sig_",outFileName,".txt"),
+            file = paste0(outDir,"/sig.",outFileName,".txt"),
             col_names = FALSE,
             na = "")
 }

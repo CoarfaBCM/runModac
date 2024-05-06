@@ -216,11 +216,11 @@ runModac <- function(inputFile,
         
         if (type == "rppa") {
           # For RPPA analysis, saving 1 signature file with antibody names and another with gene symbols
-          sigdf <- read_tsv(paste0(outdir,"/Signature/Sig_",outFileName,".txt"),
+          sigdf <- read_tsv(paste0(outdir,"/Signature/sig.",outFileName,".txt"),
                             col_names = F,
                             show_col_types = FALSE)
           tempName <- paste0(outFileName,"-AB")
-          tempFileName <- paste0(outdir,"/Signature/Sig_",tempName,".txt")
+          tempFileName <- paste0(outdir,"/Signature/sig.",tempName,".txt")
           sigdf1 <- sigdf
           sigdf1[1,1] <- tempName
           write_tsv(x = sigdf1,
@@ -232,7 +232,7 @@ runModac <- function(inputFile,
           
           sigdf$X1[-1] <- unname(sapply(sigdf$X1[-1], function(x){tempdf$GeneSymbol[tempdf$AB_name == x]}))
           
-          tempFileName <- paste0(outdir,"/Signature/Sig_",outFileName,".txt")
+          tempFileName <- paste0(outdir,"/Signature/sig.",outFileName,".txt")
           write_tsv(x = sigdf,
                     file = tempFileName,
                     col_names = FALSE,
