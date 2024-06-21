@@ -17,7 +17,7 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   istd.idx <- istd.info[mymethod, "ISTD_column"]-1
   
   if(ncol(inputdf) == istd.idx) {
-    cv <- sd(inputdf[-c(qc.idx:nrow(inputdf)),istd.idx])/mean(inputdf[,istd.idx])
+    cv <- sd(inputdf[-c(qc.idx:nrow(inputdf)),istd.idx])/mean(inputdf[-c(qc.idx:nrow(inputdf)),istd.idx])
   } else {
     all.istd.idx <- istd.idx:ncol(inputdf)
     cv <- sapply(all.istd.idx, function(x){sd(inputdf[-c(qc.idx:nrow(inputdf)),x])/mean(inputdf[-c(qc.idx:nrow(inputdf)),x])})
