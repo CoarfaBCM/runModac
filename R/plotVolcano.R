@@ -1,9 +1,10 @@
 # Volcano Plot
 plotVolcano <- function(reportFile, myComparison, outDir, fcCutoff = 1.5, padjMethod = "fdr", padjCutoff = 0.25, label = T, suffix = NULL) {
   
-  list.of.packages <- c("ggplot2")
+  list.of.packages <- c("ggplot2","ggrepel","openxlsx")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  if(length(new.packages)>0) {install.packages(new.packages)}
+  lapply(list.of.packages, require, character.only = TRUE)
   
   # function for creating folders
   createDir <- function(folder) {
@@ -15,7 +16,7 @@ plotVolcano <- function(reportFile, myComparison, outDir, fcCutoff = 1.5, padjMe
   # data$DE <- "No"
   # data$DE[(data[,"log2_fc"] > log2(fcCutoff) | data[,"log2_fc"] < -log2(fcCutoff)) & data[,padjMethod] < padjCutoff] <- "DE"
   
-  data <- read.csv(reportFile, check.names = F)
+  data <- read.xlsx(reportFile, check.names = F)
   
   data$direction <- "NS"
   data$direction[data[,"log2_fc"] > log2(fcCutoff) & data[,padjMethod] < padjCutoff] <- "up"
@@ -72,8 +73,7 @@ plotVolcano <- function(reportFile, myComparison, outDir, fcCutoff = 1.5, padjMe
   print(myvolcanoplot1)
   dev.off()
   
-  write.csv(myvolcanoplot1$data,
-            paste0(outDir,"/VolcanoPlot_",myComparison,"_FC",fcCutoff,"_",padjMethod,padjCutoff,suffix,".csv"),
-            quote = F,
-            row.names = F)
+  write.xlsx(myvolcanoplot1$data,
+             paste0(outDir,"/VolcanoPlot_",myComparison,"_FC",fcCutoff,"_",padjMethod,padjCutoff,suffix,".xlsx"),
+             rowNames = F)
 }

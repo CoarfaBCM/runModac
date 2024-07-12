@@ -10,14 +10,15 @@ plotPCA <- function(exprs,
   # Loading required packages and installing ones not present
   list.of.packages <- c("ggfortify", "openxlsx")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  if(length(new.packages)>0) {install.packages(new.packages)}
+  lapply(list.of.packages, require, character.only = TRUE)
   
   if (is.character(exprs)) {
-    exprs <- read.csv(exprs, row.names = 1, check.names = F)
+    exprs <- read.xlsx(exprs, rowNames = 1, check.names = F)
   }
   
   if (is.character(meta)) {
-    meta <- read.csv(meta, row.names = 1, check.names = F)
+    meta <- read.xlsx(meta, rowNames = 1, check.names = F)
   }
   
   if (!samplesAreRows) {
@@ -59,7 +60,7 @@ plotPCA <- function(exprs,
   dev.off()
   
   saveFile <- paste0("pca",suffix,".jpg")
-  jpeg(paste(outdir,saveFile,sep="/"), quality = 1)
+  jpeg(paste(outdir,saveFile,sep="/"), quality = 100)
   a <- autoplot(pcaRaw, data = meta, colour = colnames(meta)[1]) + 
     scale_color_manual(values = groupColors)
   print(a)

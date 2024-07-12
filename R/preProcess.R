@@ -143,11 +143,15 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       par(mar = mar.def)
       dev.off()
       
-      write.table(temp,
-                  paste(myoutdir,paste0("qc_dist_",mymethod,".xls"),sep = "/"),
-                  sep = "\t",
-                  quote = F,
-                  row.names = F)
+      # write.table(temp,
+      #             paste(myoutdir,paste0("qc_dist_",mymethod,".xls"),sep = "/"),
+      #             sep = "\t",
+      #             quote = F,
+      #             row.names = F)
+      write.xlsx(temp,
+                 file.path(myoutdir,paste0("qc_dist_",mymethod,".xlsx")),
+                 rowNames = F,
+                 overwrite = T)
       
       all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),,drop=F] #dropping QC samples
     }

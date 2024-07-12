@@ -11,18 +11,19 @@ plotHeatmap <- function(exprs,
                         cutoffStat = "fdr",
                         cutoff = 0.25) {
   # Loading required packages and installing ones not present
-  list.of.packages <- c("dplyr", "circlize", "RColorBrewer")
+  list.of.packages <- c("dplyr", "circlize", "RColorBrewer","openxlsx")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  if(length(new.packages)>0) {install.packages(new.packages)}
+  lapply(list.of.packages, require, character.only = TRUE)
   
   suppressPackageStartupMessages(library(ComplexHeatmap))
   
   if (is.character(exprs)) {
-    exprs <- read.csv(exprs, row.names = 1, check.names = F)
+    exprs <- read.xlsx(exprs, rowNames = 1, check.names = F)
   }
   
   if (is.character(meta)) {
-    meta <- read.csv(meta, row.names = 1, check.names = F)
+    meta <- read.xlsx(meta, rowNames = 1, check.names = F)
   }
   
   # Ensuring data has rows of samples and columns of features
@@ -46,15 +47,15 @@ plotHeatmap <- function(exprs,
   
   if(cutoff == 1) {
     if (grepl("fdr", cutoffStat, ignore.case = T)) {
-      sigFeatures <- read.csv(reportfile) %>% filter(fdr <= cutoff) %>% select(1)
+      sigFeatures <- read.xlsx(reportfile) %>% filter(fdr <= cutoff) %>% select(1)
     } else if (grepl("pval", cutoffStat, ignore.case = T)) {
-      sigFeatures <- read.csv(reportfile) %>% filter(pval <= cutoff) %>% select(1)
+      sigFeatures <- read.xlsx(reportfile) %>% filter(pval <= cutoff) %>% select(1)
     }
   } else {
     if (grepl("fdr", cutoffStat, ignore.case = T)) {
-      sigFeatures <- read.csv(reportfile) %>% filter(fdr < cutoff) %>% select(1)
+      sigFeatures <- read.xlsx(reportfile) %>% filter(fdr < cutoff) %>% select(1)
     } else if (grepl("pval", cutoffStat, ignore.case = T)) {
-      sigFeatures <- read.csv(reportfile) %>% filter(pval < cutoff) %>% select(1)
+      sigFeatures <- read.xlsx(reportfile) %>% filter(pval < cutoff) %>% select(1)
     }
   }
   
@@ -66,7 +67,7 @@ plotHeatmap <- function(exprs,
     
     tempdf <- cbind(c("", "Metabolite", rownames(scaled_df)),rbind(meta[,1], colnames(scaled_df), scaled_df))
     names(tempdf) <- NULL
-    write.csv(tempdf, paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".csv"), row.names	= F)
+    write.xlsx(tempdf, paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".csv"), rowNames	= F)
     
     x<-abs(max(scaled_df))
     y<-abs(min(scaled_df))

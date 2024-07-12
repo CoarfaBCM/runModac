@@ -10,11 +10,11 @@ myStatTest <- function(exprs,
                        samplesAreRows = F) {
   
   if (is.character(exprs)) {
-    exprs <- read.csv(exprs, row.names = 1, check.names = F)
+    exprs <- read.xlsx(exprs, rowNames = 1, check.names = F)
   }
   
   if (is.character(meta)) {
-    meta <- read.csv(meta, row.names = 1, check.names = F)
+    meta <- read.xlsx(meta, rowNames = 1, check.names = F)
   }
   
   # Ensuring data has rows of samples and columns of features
@@ -64,14 +64,17 @@ myStatTest <- function(exprs,
     }
     
     reportdf <- reportdf[order(reportdf$fdr),]
-    write.csv(reportdf, paste0(outdir,"/Report_",test,"_",comparison,".csv"), row.names = F)
-    
+    write.xlsx(reportdf,
+               paste0(outdir,"Report_",test,"_",comparison,".xlsx"),
+               rowNames = F)
     if (compute.log2fc) {
       fullreportdf <- rbind(c(NA,NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
     } else {
       fullreportdf <- rbind(c(NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
     }
-    write.csv(fullreportdf, paste0(outdir,"/FullReport_",test,"_",comparison,".csv"), row.names = F)
+    write.xlsx(fullreportdf,
+               paste0(outdir,"FullReport_",test,"_",comparison,".xlsx"),
+               rowNames = F)
   } else if (test == "anova") {
     all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
                                                      summary(aov(x~meta[,1]))[[1]][["Pr(>F)"]][1],
@@ -80,10 +83,14 @@ myStatTest <- function(exprs,
     
     reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, row.names = NULL)
     reportdf <- reportdf[order(reportdf$fdr),]
-    write.csv(reportdf, paste0(outdir,"/Report_",test,"_",comparison,".csv"), row.names = F)
+    write.xlsx(reportdf,
+               paste0(outdir,"Report_",test,"_",comparison,".xlsx"),
+               rowNames = F)
     
     fullreportdf <- rbind(c(NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
-    write.csv(fullreportdf, paste0(outdir,"/FullReport_",test,"_",comparison,".csv"), row.names = F)
+    write.xlsx(fullreportdf,
+               paste0(outdir,"FullReport_",test,"_",comparison,".xlsx"),
+               rowNames = F)
   }
   
   # all.fdr <- p.adjust(all.pvals, method = "BH") # FDR correction

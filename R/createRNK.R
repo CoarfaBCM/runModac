@@ -1,5 +1,5 @@
 createRNK <- function(reportFile, outFile) {
-  data <- read.csv(reportFile, check.names = F)
+  data <- read.xlsx(reportFile, check.names = F)
   if (any(grepl("log2",colnames(data), ignore.case = T))) {
     data <- data[order(data[,which(grepl("log2",colnames(data)))], decreasing = T),]
     write.table(data[,c(1, which(grepl("log2",colnames(data))))], outFile, quote = F, sep = "\t", row.names = F)

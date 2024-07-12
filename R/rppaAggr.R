@@ -8,7 +8,8 @@ rppaAggr <- function(inputFile,
   # Loading required packages and installing ones not present
   list.of.packages <- c("readxl","openxlsx","dplyr")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  if(length(new.packages)>0) {install.packages(new.packages)}
+  lapply(list.of.packages, require, character.only = TRUE)
 
   tempfunc <- function(inputFile,
                        wb,
@@ -104,7 +105,7 @@ rppaAggr <- function(inputFile,
       return(unique_names)
     }
     
-    mydf$AB_name <- makeUniqueNames(IDs = mydf$X1, names = mydf$AB_name)
+    mydf$AB_name <- makeUniqueNames(IDs = mydf$AB_ID, names = mydf$AB_name)
     
     mydf[,-c(1:3)] <- sapply(mydf[,-c(1:3)], as.numeric)
     
@@ -229,6 +230,6 @@ rppaAggr <- function(inputFile,
                     replace.na = replace.na)
     saveWorkbook(wb1,outputFile,overwrite = TRUE)
   } else {
-    saveWorkbook(wb1,outputFile,overwrite = TRUE)
+    saveWorkbook(wb,outputFile,overwrite = TRUE)
   }
 }

@@ -6,14 +6,11 @@ createPptx <- function(project_title = "Project Report",
                        outdir = outdir,
                        template_pptx_path) {
   
-  library(officer)
-  library(tidyverse)
-  library(jpeg)
-  
   # Loading required packages and installing ones not present
   list.of.packages <- c("officer", "tidyverse", "jpeg")
   new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  if(length(new.packages)>0) {install.packages(new.packages)}
+  lapply(list.of.packages, require, character.only = TRUE)
   
   normalization <- settings["normalization",1]
   input_space <- settings["input_data_space",1]

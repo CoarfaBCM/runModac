@@ -12,24 +12,46 @@ runModac <- function(inputFile,
                      min_signal = NULL) {
   
   # Loading required packages and installing ones not present
-  list.of.packages <- c("foreach","doParallel")
-  new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-  if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+  # list.of.packages <- c("foreach","doParallel")
+  # new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+  # if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
-  # Set the number of cores to use
-  num_cores <- 4
-
-  # Register the parallel backend
-  cl <- makeCluster(num_cores, outfile="")
-  registerDoParallel(cl)
-
-  # Convert the loop to parallel using foreach
-  foreach(i = 1) %dopar% {
-  # for (i in 1) {
+  # creating function to install and load packages
+  install_pkg <- function(pkg) {
+    if (!require(pkg, character.only = TRUE)) {
+      install.packages(pkg, dependencies = TRUE)
+    }
+    library(pkg, character.only = TRUE)
+  }
+  
+  # setting CRAN mirror
+  options(repos = c(CRAN = "https://cran.r-project.org"))
+  
+  # installing required packages
+  list.of.packages <- c("foreach","doParallel")
+  lapply(list.of.packages, install_pkg)
+  
+  # # Set the number of cores to use
+  # num_cores <- 4
+  # 
+  # # Register the parallel backend
+  # cl <- makeCluster(num_cores, outfile="")
+  # registerDoParallel(cl)
+  # 
+  # # Convert the loop to parallel using foreach
+  # foreach(i = 1) %dopar% {
+  for (i in 1) {
     # Loading required packages and installing ones not present
+    # list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
+    # new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+    # if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+    
+    # setting CRAN mirror
+    options(repos = c(CRAN = "https://cran.r-project.org"))
+    
+    # installing required packages
     list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
-    new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
-    if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
+    lapply(list.of.packages, install_pkg)
     
     source(paste0(scriptPath,"/createDir.R"))
     
@@ -182,12 +204,14 @@ runModac <- function(inputFile,
                  outdir = paste0(outdir, "/report/"))
       
       if (type == "rppa") {
-        fullreport <- read.csv(paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".csv"), header = T, row.names = NULL)
+        fullreport <- read.xlsx(paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".xlsx"), colNames = T, rowNames = F)
         tempdf <- read.xlsx(paste0(outdir,"/report/full_aggregate_data.xlsx"), sheet = "Norm_Median", rowNames = F)
         geneSymbols <- unlist(unname(sapply(fullreport$ID[-1], function(x){tempdf$GeneSymbol[tempdf$AB_name == x]})))
         finalreport <- data.frame(GeneSymbol = c(NA,geneSymbols), fullreport)
         names(finalreport)[2] <- "AB_name"
-        write.csv(finalreport, paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".csv"), row.names = F) 
+        write.xlsx(finalreport,
+                   paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".xlsx"),
+                   rowNames = F)
       }
       
       if (mytest == "t-test") {
@@ -195,7 +219,7 @@ runModac <- function(inputFile,
         createDir(paste0(outdir,"/Signature"))
         
         source(paste0(scriptPath,"/createRNK.R"))
-        createRNK(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+        createRNK(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
                   outFile = paste0(outdir,"/Rnk/Rnk_",mycomparison,".rnk"))
         
         if (compute_log2fc) {
@@ -207,7 +231,7 @@ runModac <- function(inputFile,
         }
         
         source(paste0(scriptPath,"/createSignature.R"))
-        createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+        createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
                         outFileName = outFileName,
                         outDir = paste0(outdir,"/Signature/"),
                         fcCutoff = temp_fc_cutoff,
@@ -245,7 +269,7 @@ runModac <- function(inputFile,
       # if compute_log2fc is F, volcano plots should not be generated and a message should be displayed
       source(paste0(scriptPath,"/plotVolcano.R"))
       if (compute_log2fc & mytest == "t-test") {
-        plotVolcano(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+        plotVolcano(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
                     myComparison = mycomparison,
                     outDir = paste0(outdir, "/volcano_plots/"),
                     fcCutoff = as.numeric(settings["linear_fc_cutoff",1]),
@@ -262,7 +286,7 @@ runModac <- function(inputFile,
                   groupOrder = mygroups,
                   groupColors = col_list$group[mygroups],
                   heatmapColorScale = heatmap_color_scale,
-                  reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+                  reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
                   cutoffStat = settings["padj_method",1],
                   cutoff = as.numeric(settings["padj_cutoff",1]),
                   samplesAreRows = T)
@@ -274,7 +298,7 @@ runModac <- function(inputFile,
                   groupOrder = mygroups,
                   groupColors = col_list$group[mygroups],
                   heatmapColorScale = heatmap_color_scale,
-                  reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".csv"),
+                  reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
                   cutoffStat = settings["padj_method",1],
                   cutoff = 1,
                   samplesAreRows = T)
@@ -301,6 +325,6 @@ runModac <- function(inputFile,
     file.remove(file_path)
   }
   
-  # Stop the parallel backend
-  stopCluster(cl)
+  # # Stop the parallel backend
+  # stopCluster(cl)
 }
