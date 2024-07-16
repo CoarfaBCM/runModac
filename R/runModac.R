@@ -77,7 +77,7 @@ runModac <- function(inputFile,
       tempdf <- read.xlsx(paste0(myoutdir, "/full_aggregate_data.xlsx"), sheet="Norm_Median")
       write.xlsx(list(rppa = data.frame(tempdf[,-c(1,3,4)],check.rows = F,check.names = F)),
                  paste0(myoutdir, "/aggregate_data.xlsx"),
-                 rowNames = F)
+                 rowNames = F, overwrite = T)
       exprsdf <- preProcess(inputFile = paste0(myoutdir, "/aggregate_data.xlsx"),
                             comparisonsFile = comparisonsFile,
                             outdir = outdir,
@@ -211,7 +211,7 @@ runModac <- function(inputFile,
         names(finalreport)[2] <- "AB_name"
         write.xlsx(finalreport,
                    paste0(outdir,"/report/FullReport_",mytest,"_",mycomparison,".xlsx"),
-                   rowNames = F)
+                   rowNames = F, overwrite = T)
       }
       
       if (mytest == "t-test") {

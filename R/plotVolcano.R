@@ -75,5 +75,5 @@ plotVolcano <- function(reportFile, myComparison, outDir, fcCutoff = 1.5, padjMe
   
   write.xlsx(myvolcanoplot1$data,
              paste0(outDir,"/VolcanoPlot_",myComparison,"_FC",fcCutoff,"_",padjMethod,padjCutoff,suffix,".xlsx"),
-             rowNames = F)
+             rowNames = F, overwrite = T)
 }

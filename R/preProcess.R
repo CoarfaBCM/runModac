@@ -202,8 +202,8 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
   
   # write.table(data.frame(ID=rownames(exprsdf.raw), exprsdf.raw, check.names = F), paste0(myoutdir,"/raw_data.xls"), quote = F, row.names = F, sep = "\t", col.names = T)
   # write.table(data.frame(ID=rownames(exprsdf.norm), exprsdf.norm, check.names = F), paste0(myoutdir,"/normalized_data.xls"), quote = F, row.names = F, sep = "\t", col.names = T)
-  write.xlsx(data.frame(ID=rownames(exprsdf.raw), exprsdf.raw, check.names = F), paste0(myoutdir,"/raw_data.xlsx"), rowNames = F, colNames = T)
-  write.xlsx(data.frame(ID=rownames(exprsdf.norm), exprsdf.norm, check.names = F), paste0(myoutdir,"/normalized_data.xlsx"), rowNames = F, colNames = T)
+  write.xlsx(data.frame(ID=rownames(exprsdf.raw), exprsdf.raw, check.names = F), paste0(myoutdir,"/raw_data.xlsx"), rowNames = F, colNames = T, overwrite = T)
+  write.xlsx(data.frame(ID=rownames(exprsdf.norm), exprsdf.norm, check.names = F), paste0(myoutdir,"/normalized_data.xlsx"), rowNames = F, colNames = T, overwrite = T)
   
   return(list(raw = exprsdf.raw,
               norm=exprsdf.norm,

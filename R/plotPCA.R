@@ -43,7 +43,9 @@ plotPCA <- function(exprs,
   createDir(outdir)
   
   saveFile <- paste0("pca",suffix,".pdf")
-  write.xlsx(pcaRaw, paste(outdir,gsub("pdf","xlsx",saveFile),sep="/"), overwrite = T)
+  write.xlsx(pcaRaw,
+             paste(outdir,gsub("pdf","xlsx",saveFile),sep="/"),
+             overwrite = T)
   pdf(paste(outdir,saveFile,sep="/"))
   a <- autoplot(pcaRaw, data = meta, colour = colnames(meta)[1]) + 
     scale_color_manual(values = groupColors)

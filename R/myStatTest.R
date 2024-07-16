@@ -66,7 +66,7 @@ myStatTest <- function(exprs,
     reportdf <- reportdf[order(reportdf$fdr),]
     write.xlsx(reportdf,
                paste0(outdir,"Report_",test,"_",comparison,".xlsx"),
-               rowNames = F)
+               rowNames = F, overwrite = T)
     if (compute.log2fc) {
       fullreportdf <- rbind(c(NA,NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
     } else {
@@ -74,7 +74,7 @@ myStatTest <- function(exprs,
     }
     write.xlsx(fullreportdf,
                paste0(outdir,"FullReport_",test,"_",comparison,".xlsx"),
-               rowNames = F)
+               rowNames = F, overwrite = T)
   } else if (test == "anova") {
     all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
                                                      summary(aov(x~meta[,1]))[[1]][["Pr(>F)"]][1],
@@ -85,12 +85,12 @@ myStatTest <- function(exprs,
     reportdf <- reportdf[order(reportdf$fdr),]
     write.xlsx(reportdf,
                paste0(outdir,"Report_",test,"_",comparison,".xlsx"),
-               rowNames = F)
+               rowNames = F, overwrite = T)
     
     fullreportdf <- rbind(c(NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
     write.xlsx(fullreportdf,
                paste0(outdir,"FullReport_",test,"_",comparison,".xlsx"),
-               rowNames = F)
+               rowNames = F, overwrite = T)
   }
   
   # all.fdr <- p.adjust(all.pvals, method = "BH") # FDR correction
