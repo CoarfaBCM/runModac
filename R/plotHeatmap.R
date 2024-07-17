@@ -67,9 +67,13 @@ plotHeatmap <- function(exprs,
     
     tempdf <- cbind(c("", "Metabolite", rownames(scaled_df)),rbind(meta[,1], colnames(scaled_df), scaled_df))
     names(tempdf) <- NULL
-    write.xlsx(tempdf,
-               paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".csv"),
-               rowNames	= F, overwrite = T)
+    # write.xlsx(tempdf,
+    #            paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".xlsx"),
+    #            rowNames	= F, overwrite = T)
+    write.table(tempdf,
+                paste0(outdir,"/heatmap_",test,"_",comparison,"_",cutoffStat,cutoff,".xls"),
+                sep = "\t", append = F, quote = F,
+                row.names	= F, col.names = T)
     
     x<-abs(max(scaled_df))
     y<-abs(min(scaled_df))
