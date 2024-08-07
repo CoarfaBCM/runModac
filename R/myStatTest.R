@@ -45,11 +45,11 @@ myStatTest <- function(exprs,
     
     if (diff.space == "log2") {
       # here, data is already transformed to log2 space in the pre processing step
-      log2FC <- apply(exprs[meta[,1] == test.group, ], 2, mean) - apply(exprs[meta[,1] == ctrl.group, ], 2, mean)
+      log2FC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, mean) - apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, mean)
       linearFC <- 2^log2FC
     } else if (diff.space == "linear") {
       # here, data is already transformed to linear space in the pre processing step
-      linearFC <- apply(exprs[meta[,1] == test.group, ], 2, mean)/apply(exprs[meta[,1] == ctrl.group, ], 2, mean)
+      linearFC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, mean)/apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, mean)
       if (compute.log2fc) {
         log2FC <- log2(linearFC) 
       }
@@ -63,14 +63,14 @@ myStatTest <- function(exprs,
       reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, linear_fc = linearFC, row.names = NULL)
     }
     
-    reportdf <- reportdf[order(reportdf$fdr),]
+    reportdf <- reportdf[order(reportdf$fdr), ,drop=F]
     write.xlsx(reportdf,
                paste0(outdir,"Report_",test,"_",comparison,".xlsx"),
                rowNames = F, overwrite = T)
     if (compute.log2fc) {
-      fullreportdf <- rbind(c(NA,NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
+      fullreportdf <- rbind(c(NA,NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID,drop=F])))
     } else {
-      fullreportdf <- rbind(c(NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
+      fullreportdf <- rbind(c(NA,NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID,drop=F])))
     }
     write.xlsx(fullreportdf,
                paste0(outdir,"FullReport_",test,"_",comparison,".xlsx"),
@@ -82,12 +82,12 @@ myStatTest <- function(exprs,
     all.fdr <- p.adjust(all.pvals, method = "BH") # FDR correction
     
     reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, row.names = NULL)
-    reportdf <- reportdf[order(reportdf$fdr),]
+    reportdf <- reportdf[order(reportdf$fdr),,drop=F]
     write.xlsx(reportdf,
                paste0(outdir,"Report_",test,"_",comparison,".xlsx"),
                rowNames = F, overwrite = T)
     
-    fullreportdf <- rbind(c(NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID])))
+    fullreportdf <- rbind(c(NA,NA,NA,meta[,1]),cbind(reportdf, t(exprs[,reportdf$ID,drop=F])))
     write.xlsx(fullreportdf,
                paste0(outdir,"FullReport_",test,"_",comparison,".xlsx"),
                rowNames = F, overwrite = T)
