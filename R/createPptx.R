@@ -133,8 +133,8 @@ createPptx <- function(project_title = "Project Report",
   
   # PCA ----------------------------------------------------------------
   for(i in seq_along(all.comparison.labels)){
-    pcas_norm<-paste0("pca_norm_",all.comparison.labels[i],".jpg")
-    pcas_raw<-paste0("pca_raw_",all.comparison.labels[i],".jpg")
+    pcas_norm<-paste0(outdir,"/pca/pca_norm_",all.comparison.labels[i],".jpg")
+    pcas_raw<-paste0(outdir,"/pca/pca_raw_",all.comparison.labels[i],".jpg")
     
     report<-report%>%add_slide(layout="Comparison",master="Custom Design")
     report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",all.comparison.labels[i]))
@@ -155,17 +155,17 @@ createPptx <- function(project_title = "Project Report",
     report<-report%>%ph_with(location=ph_location_type("body", id=3),value=temp1)
     report<-report%>%ph_with(location=ph_location_type("body", id=1),value=temp2)
     
-    if(!is_empty(pcas_norm)){
-      img<-readJPEG(paste0(outdir,"/pca/",pcas_norm))
+    if(file.exists(pcas_norm)){
+      img<-readJPEG(pcas_norm)
       height<-dim(img)[1]/96
       width<-dim(img)[2]/96
-      report<-report%>%ph_with(value=external_img(paste0(outdir,"/pca/",pcas_norm)),ph_location(left = 5.08,top = 1.56,width = 4.5,height = 4.25/width*height))
+      report<-report%>%ph_with(value=external_img(pcas_norm),ph_location(left = 5.08,top = 1.56,width = 4.5,height = 4.25/width*height))
     }
-    if(!is_empty(pcas_raw)){
-      img<-readJPEG(paste0(outdir,"/pca/",pcas_raw))
+    if(file.exists(pcas_raw)){
+      img<-readJPEG(pcas_raw)
       height<-dim(img)[1]/96
       width<-dim(img)[2]/96
-      report<-report%>%ph_with(value=external_img(paste0(outdir,"/pca/",pcas_raw)),ph_location(left = 0.5,top = 1.56,width = 4.5,height = 4.25/width*height))
+      report<-report%>%ph_with(value=external_img(pcas_raw),ph_location(left = 0.5,top = 1.56,width = 4.5,height = 4.25/width*height))
     }
   }
   
