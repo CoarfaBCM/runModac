@@ -157,8 +157,8 @@ runModac <- function(inputFile,
       mygroups <- suppressMessages(as.character(read_excel(comparisonsFile, trim_ws = T, sheet = i+1, skip = 2, n_max = 1, col_names = F))[-1])
       mymeta <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], skip = 3), row.names = 2, check.rows = F))
       mymeta <- mymeta[mymeta[,1] %in% mygroups, , drop = F]
-      myexprs.raw <- exprsdf[["raw"]][rownames(mymeta),]
-      myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),]
+      myexprs.raw <- exprsdf[["raw"]][rownames(mymeta),, drop=F]
+      myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),, drop=F]
       
       # filtering out features for which none of the samples in this comparison have signal > min_signal
       if (!(is.null(min_signal))) {
@@ -174,18 +174,23 @@ runModac <- function(inputFile,
       }
       
       # PCA plot
-      plotPCA(exprs = myexprs.raw,
-              meta = mymeta,
-              outdir = paste0(outdir, "/pca"),
-              suffix = paste0("_raw_",mycomparison),
-              groupColors = col_list$group[mygroups],
-              samplesAreRows = T)
-      plotPCA(exprs = myexprs.norm,
-              meta = mymeta,
-              outdir = paste0(outdir, "/pca"),
-              suffix = paste0("_norm_",mycomparison),
-              groupColors = col_list$group[mygroups],
-              samplesAreRows = T)
+      if (ncol(myexprs.raw) > 1) {
+        plotPCA(exprs = myexprs.raw,
+                meta = mymeta,
+                outdir = paste0(outdir, "/pca"),
+                suffix = paste0("_raw_",mycomparison),
+                groupColors = col_list$group[mygroups],
+                samplesAreRows = T)
+      }
+      
+      if (ncol(myexprs.norm) > 1) {
+        plotPCA(exprs = myexprs.norm,
+                meta = mymeta,
+                outdir = paste0(outdir, "/pca"),
+                suffix = paste0("_norm_",mycomparison),
+                groupColors = col_list$group[mygroups],
+                samplesAreRows = T)
+      }
       
       settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 9, col_names = F), row.names = 1, check.rows = F))
       input_space <- settings["input_data_space",1]
