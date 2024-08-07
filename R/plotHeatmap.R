@@ -34,7 +34,7 @@ plotHeatmap <- function(exprs,
   meta <- meta[match(rownames(exprs), rownames(meta)), , drop=F]
   
   meta <- meta[order(match(meta$group, groupOrder)), , drop=F]
-  exprs <- exprs[match(rownames(meta), rownames(exprs)),]
+  exprs <- exprs[match(rownames(meta), rownames(exprs)), , drop=F]
   
   # function for creating folders
   createDir <- function(folder) {
@@ -62,7 +62,11 @@ plotHeatmap <- function(exprs,
   if (nrow(sigFeatures) == 0) {
     print(cat("No significant features at", cutoffStat, "<", cutoff,"\n"))
   } else {
-    scaled_df <- as.data.frame(t(scale(t(exprdf[sigFeatures[,1],]))))
+    if (nrow(exprdf) == 1) {
+      scaled_df <- exprdf
+    } else {
+      scaled_df <- as.data.frame(t(scale(t(exprdf[sigFeatures[,1], , drop=F]))))
+    }
     scaled_df <- na.omit(scaled_df)
     
     tempdf <- cbind(c("", "Metabolite", rownames(scaled_df)),rbind(meta[,1], colnames(scaled_df), scaled_df))
