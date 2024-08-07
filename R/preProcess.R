@@ -195,6 +195,9 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
   },
   all.exprs.norm)
   
+  exprsdf.raw <- data.frame(exprsdf.raw, check.rows = F, check.names = F)
+  exprsdf.norm <- data.frame(exprsdf.norm, check.rows = F, check.names = F)
+  
   print(cat("##### Total number of samples:", nrow(exprsdf.norm), "#####\n"))
   print(cat("##### Total number of features:", ncol(exprsdf.norm), "#####\n"))
   
