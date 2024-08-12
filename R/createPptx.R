@@ -177,7 +177,7 @@ createPptx <- function(project_title = "Project Report",
   volcanoplots_jpg<-gsub(x=volcanoplots_jpg,pattern = "\\-","\\\\\\-")
   
   for(i in seq_along(volcanoplots_jpg)){
-    volcanoplots_sub<-volcanoplots[grepl(volcanoplots_jpg[i], volcanoplots, ignore.case = T)]
+    volcanoplots_sub <- volcanoplots[grepl(paste0("VolcanoPlot_",volcanoplots_jpg[i]), volcanoplots, ignore.case = T)]
     
     if(!is_empty(volcanoplots_sub)){
       ctrl_ppt(report=report,files=paste0(outdir,"/volcano_plots/",volcanoplots_sub),title=c("Comparison "),names=volcanoplots_names[i])
