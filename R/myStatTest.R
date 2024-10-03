@@ -43,6 +43,13 @@ myStatTest <- function(exprs,
                                                      t.test(x~meta[,1])$p.value,
                                                      1)})
     
+    # code for paired t-test. make sure same number of samples in both groups
+    # all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
+    #                                                  t.test(x[meta[,1] == test.group],
+    #                                                         x[meta[,1] == ctrl.group],
+    #                                                         paired = T)$p.value,
+    #                                                  1)})
+    
     if (diff.space == "log2") {
       # here, data is already transformed to log2 space in the pre processing step
       log2FC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, mean) - apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, mean)
