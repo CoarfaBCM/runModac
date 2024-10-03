@@ -170,17 +170,35 @@ createPptx <- function(project_title = "Project Report",
   }
   
   # Volcano plots ----------------------------------------------------------------
-  volcanoplots<-list.files(path = paste0(outdir, "/volcano_plots/"), pattern="*.jpg")
-  volcanoplots_jpg<-comparison[grepl("_over_", comparison, ignore.case = T)]
-  volcanoplots_names<-volcanoplots_jpg
-  volcanoplots_jpg<-gsub(x=volcanoplots_jpg,pattern = "\\+","\\\\\\+")
-  volcanoplots_jpg<-gsub(x=volcanoplots_jpg,pattern = "\\-","\\\\\\-")
+  # volcanoplots<-list.files(path = paste0(outdir, "/volcano_plots/"), pattern="*.jpg")
+  # volcanoplots_jpg<-comparison[grepl("_over_", comparison, ignore.case = T)]
+  # volcanoplots_names<-volcanoplots_jpg
+  # volcanoplots_jpg<-gsub(x=volcanoplots_jpg,pattern = "\\+","\\\\\\+")
+  # volcanoplots_jpg<-gsub(x=volcanoplots_jpg,pattern = "\\-","\\\\\\-")
+  # 
+  # for(i in seq_along(volcanoplots_jpg)){
+  #   volcanoplots_sub <- volcanoplots[grepl(paste0("VolcanoPlot_",volcanoplots_jpg[i]), volcanoplots, ignore.case = T)]
+  #   
+  #   if(!is_empty(volcanoplots_sub)){
+  #     ctrl_ppt(report=report,files=paste0(outdir,"/volcano_plots/",volcanoplots_sub),title=c("Comparison "),names=volcanoplots_names[i])
+  #   }
+  # }
   
-  for(i in seq_along(volcanoplots_jpg)){
-    volcanoplots_sub <- volcanoplots[grepl(paste0("VolcanoPlot_",volcanoplots_jpg[i]), volcanoplots, ignore.case = T)]
-    
-    if(!is_empty(volcanoplots_sub)){
-      ctrl_ppt(report=report,files=paste0(outdir,"/volcano_plots/",volcanoplots_sub),title=c("Comparison "),names=volcanoplots_names[i])
+  volcanoplots <- list.files(path = paste0(outdir, "/volcano_plots/"), pattern="*.jpg")
+  mycomparisons <- comparison[grepl("_over_", comparison, ignore.case = T)]
+  
+  if ((length(volcanoplots) > 0) & (length(mycomparisons) > 0)) {
+    myfc <- tail(strsplit(volcanoplots[1],"_")[[1]], 2)[1]
+    myfdr <- tail(strsplit(volcanoplots[1],"_")[[1]], 2)[2]
+    for(i in seq_along(mycomparisons)){
+      myvolcanoplot <- paste0("VolcanoPlot_", mycomparisons[i], "_", myfc, "_", myfdr)
+      
+      if(file.exists(paste0(outdir,"/volcano_plots/",myvolcanoplot))){
+        ctrl_ppt(report=report,
+                 files=paste0(outdir,"/volcano_plots/",myvolcanoplot),
+                 title=c("Comparison "),
+                 names=mycomparisons[i])
+      }
     }
   }
   
