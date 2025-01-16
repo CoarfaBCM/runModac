@@ -53,6 +53,10 @@ runModac <- function(inputFile,
     list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
     lapply(list.of.packages, install_pkg)
     
+    # installing complex heatmap
+    if (!requireNamespace("BiocManager", quietly = TRUE)) install.packages("BiocManager")
+    if (!requireNamespace("ComplexHeatmap", quietly = TRUE)) BiocManager::install(c("ComplexHeatmap"))
+    
     source(paste0(scriptPath,"/createDir.R"))
     
     # Creating output dir for QA plots
