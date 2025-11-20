@@ -18,7 +18,8 @@ rppaAggr <- function(inputFile,
                        sampleIDRow,
                        replace.cvcutoff = NULL,
                        replace.na = NULL) {
-    mydf <- read.xlsx(inputFile, sheet = sheetName)
+    #mydf <- read.xlsx(inputFile, sheet = sheetName)
+    mydf <- read_excel(path = inputFile, sheet = sheetName, .name_repair = function(x){ gsub(" ", "", x) } )
     
     if (!("AB_species" %in% names(mydf))) {
       rawdf <- mydf
@@ -47,7 +48,22 @@ rppaAggr <- function(inputFile,
       mycols1 <- c("AB_ID","AB_name","AB_species","Slide_file","Gene_ID", "Swiss_ID")
       mycols2 <- setdiff(names(rawdf), mycols1)
       rawdf <- rawdf[, c(mycols1, mycols2)]
-      writeData(wb,sheetName,rawdf,rowNames = FALSE)
+      
+      tempdf <- rawdf
+      writeData(wb, sheetName, rbind(names(tempdf), tempdf[1,]), startRow = 1, rowNames = F, colNames = F)
+      
+      tempdf <- tempdf[-1,]
+      tempdf[7:ncol(tempdf)] <- sapply(tempdf[7:ncol(tempdf)],as.numeric, simplify = F)
+      writeData(wb, sheetName, tempdf, startRow = 3, rowNames = F, colNames = F)
+      
+      # formatting all numeric cells
+      addStyle(wb = wb,
+               sheet = sheetName,
+               style = createStyle(numFmt = "0.00"),
+               cols = 7:ncol(rawdf),
+               rows = 3:(nrow(rawdf)+1),
+               gridExpand = T)
+      
       # bold the first column
       addStyle(wb = wb,
                sheet = sheetName,
