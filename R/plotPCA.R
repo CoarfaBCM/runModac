@@ -29,10 +29,21 @@ plotPCA <- function(exprs,
   exprs <- exprs[keep,,drop=F]
   meta <- meta[keep,,drop=F]
   if (!(identical(rownames(exprs), rownames(meta)))) {
-    stop(cat("##### Error matching samples between expression and meta data. #####"))
+    stop(cat("##### Error matching samples between expression and meta data. #####\n"))
   }
   # meta <- meta[match(colnames(exprs), rownames(meta)), , drop=F]
   
+  if (any(is.na(exprs))) {
+    cat("##### NAs in expression data hence no PCA. #####\n")
+    return(NULL)
+  }
+  
+  if (any(is.na(meta))) {
+    cat("##### NAs in meta data hence no PCA. #####\n")
+    return(NULL)
+  }
+  
+  #pcaRaw <- prcomp(na.omit(exprs))
   pcaRaw <- prcomp(exprs)
   
   # function for creating folders

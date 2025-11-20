@@ -67,7 +67,7 @@ plotHeatmap <- function(exprs,
     } else {
       scaled_df <- as.data.frame(t(scale(t(exprdf[sigFeatures[,1], , drop=F]))))
     }
-    scaled_df <- na.omit(scaled_df)
+    scaled_df <- scaled_df[rowSums(!is.na(scaled_df)) > 0, ]
     
     tempdf <- cbind(c("", "Metabolite", rownames(scaled_df)),rbind(meta[,1], colnames(scaled_df), scaled_df))
     # names(tempdf) <- NULL

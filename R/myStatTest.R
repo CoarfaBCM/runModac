@@ -52,11 +52,11 @@ myStatTest <- function(exprs,
     
     if (diff.space == "log2") {
       # here, data is already transformed to log2 space in the pre processing step
-      log2FC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, mean) - apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, mean)
+      log2FC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, function(x){mean(x, na.rm=T)}) - apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, function(x){mean(x, na.rm=T)})
       linearFC <- 2^log2FC
     } else if (diff.space == "linear") {
       # here, data is already transformed to linear space in the pre processing step
-      linearFC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, mean)/apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, mean)
+      linearFC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, function(x){mean(x, na.rm=T)})/apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, function(x){mean(x, na.rm=T)})
       if (compute.log2fc) {
         log2FC <- log2(linearFC) 
       }

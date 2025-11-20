@@ -1,4 +1,4 @@
-preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAreRows = T) {
+preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAreRows = T, replaceNA = NULL, replaceZeros = NULL) {
   
   all.methods <- excel_sheets(inputFile)
   settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 9, col_names = F), row.names = 1, check.rows = F))
@@ -36,13 +36,21 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     inputdf[] <- lapply(inputdf, as.numeric)
     
     if(any(is.na(inputdf))) {
-      print(cat("##### Replacing", sum(is.na(inputdf)),"NAs with 1 #####\n"))
-      inputdf[is.na(inputdf)] <- 1 
+      if (!(is.null(replaceNA))) {
+        print(cat("##### Replacing", sum(is.na(inputdf)),"NAs with", replaceNA,"#####\n"))
+        inputdf[is.na(inputdf)] <- replaceNA 
+      } else {
+        cat("##### Data contains", sum(is.na(inputdf)),"NAs and replaceNA = NULL hence keeping all NAs as is. #####\n")
+      }
     }
     
-    if(log2TF & any(inputdf == 0)) {
-      print(cat("##### Since data has to be log2 transformed, replacing", sum(inputdf == 0),"zeros with 1 #####\n"))
-      inputdf[inputdf == 0] <- 1 
+    if(any(inputdf == 0, na.rm = T)) {
+      if (!(is.null(replaceZeros))) {
+        print(cat("##### Replacing", sum(inputdf == 0),"zeros with", replaceZeros, "#####\n"))
+        inputdf[inputdf == 0] <- replaceZeros
+      } else {
+        cat("##### Data contains", sum(inputdf == 0),"Zeros and replaceZeros = NULL hence keeping all Zeros as is. #####\n")
+      }
     }
     
     if (normalization == "none") {
