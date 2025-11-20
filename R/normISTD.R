@@ -12,15 +12,20 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   
   # saving qc row start idx
   qc.idx <- as.numeric(settings["QC_row",1])-1
+  if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
+    inputdf.noqc <- inputdf
+  } else {
+    inputdf.noqc <- inputdf[-c(qc.idx:nrow(inputdf)),]
+  }
   
   # calculating CV
   istd.idx <- istd.info[mymethod, "ISTD_column"]-1
   
   if(ncol(inputdf) == istd.idx) {
-    cv <- sd(inputdf[-c(qc.idx:nrow(inputdf)),istd.idx])/mean(inputdf[-c(qc.idx:nrow(inputdf)),istd.idx])
+    cv <- sd(inputdf.noqc[,istd.idx])/mean(inputdf.noqc[,istd.idx])
   } else {
     all.istd.idx <- istd.idx:ncol(inputdf)
-    cv <- sapply(all.istd.idx, function(x){sd(inputdf[-c(qc.idx:nrow(inputdf)),x])/mean(inputdf[-c(qc.idx:nrow(inputdf)),x])})
+    cv <- sapply(all.istd.idx, function(x){sd(inputdf.noqc[,x])/mean(inputdf.noqc[,x])})
     keep <- all.istd.idx[which(cv == min(cv))]
     inputdf <- inputdf[,c(1:(istd.idx-1),keep)]
     cv <- min(cv)
@@ -86,10 +91,15 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   }
   
   # dropping istd
+  if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
+    return_qc_num <- 0
+  } else {
+    return_qc_num <- length(qc.idx:nrow(inputdf))
+  }
   return(list(data = inputdf[,-ncol(inputdf)],
               istd = colnames(inputdf)[ncol(inputdf)],
               cv = round(cv,2),
-              qc_num = length(qc.idx:nrow(inputdf))
+              qc_num = return_qc_num
               )
          )
 }

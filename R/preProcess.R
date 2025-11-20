@@ -67,8 +67,11 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     } else {
       # saving qc row start idx
       qc.idx <- as.numeric(settings["QC_row",1])-1
-      
-      all.exprs.raw[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),]
+      if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
+        all.exprs.raw[[i]] <- inputdf
+      } else {
+        all.exprs.raw[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),] 
+      }
       
       if (normalization == "istd") {
         source(paste0(scriptPath,"/normISTD.R"))
@@ -126,34 +129,38 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       #           quote = F,
       #           row.names = F)
       
-      temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]))
-      
-      mar.def <- par()$mar
-      
-      pdf(paste(myoutdir,paste0("qc_dist_",mymethod,".pdf"),sep = "/"))
-      par(mar = mar.def + c(5,0,-3,0))
-      boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
-      dev.off()
-
-      jpeg(paste(myoutdir,paste0("qc_dist_",mymethod,".jpg"),sep = "/"))
-      par(mar = mar.def + c(5,0,-3,0))
-      boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
-      dev.off()
-      
-      par(mar = mar.def)
-      dev.off()
-      
-      # write.table(temp,
-      #             paste(myoutdir,paste0("qc_dist_",mymethod,".xls"),sep = "/"),
-      #             sep = "\t",
-      #             quote = F,
-      #             row.names = F)
-      write.xlsx(temp,
-                 file.path(myoutdir,paste0("qc_dist_",mymethod,".xlsx")),
-                 rowNames = F,
-                 overwrite = T)
-      
-      all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),,drop=F] #dropping QC samples
+      if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
+        all.exprs.norm[[i]] <- inputdf
+      } else {
+        temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]))
+        
+        mar.def <- par()$mar
+        
+        pdf(paste(myoutdir,paste0("qc_dist_",mymethod,".pdf"),sep = "/"))
+        par(mar = mar.def + c(5,0,-3,0))
+        boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
+        dev.off()
+        
+        jpeg(paste(myoutdir,paste0("qc_dist_",mymethod,".jpg"),sep = "/"))
+        par(mar = mar.def + c(5,0,-3,0))
+        boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
+        dev.off()
+        
+        par(mar = mar.def)
+        dev.off()
+        
+        # write.table(temp,
+        #             paste(myoutdir,paste0("qc_dist_",mymethod,".xls"),sep = "/"),
+        #             sep = "\t",
+        #             quote = F,
+        #             row.names = F)
+        write.xlsx(temp,
+                   file.path(myoutdir,paste0("qc_dist_",mymethod,".xlsx")),
+                   rowNames = F,
+                   overwrite = T)
+        
+        all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),,drop=F] #dropping QC samples
+      }
     }
     
     pdf(paste0(myoutdir,"/boxplot_",mymethod,".pdf"))
