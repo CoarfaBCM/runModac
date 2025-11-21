@@ -42,16 +42,16 @@ runModac <- function(inputFile,
   list.of.packages <- c("foreach","doParallel")
   lapply(list.of.packages, install_pkg)
   
-  # Set the number of cores to use
-  num_cores <- 4
-
-  # Register the parallel backend
-  cl <- makeCluster(num_cores, outfile="")
-  registerDoParallel(cl)
-
-  # Convert the loop to parallel using foreach
-  foreach(i = 1) %dopar% {
-  # for (i in 1) {
+  # # Set the number of cores to use
+  # num_cores <- 4
+  # 
+  # # Register the parallel backend
+  # cl <- makeCluster(num_cores, outfile="")
+  # registerDoParallel(cl)
+  # 
+  # # Convert the loop to parallel using foreach
+  # foreach(i = 1) %dopar% {
+  for (i in 1) {
     # Loading required packages and installing ones not present
     # list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
     # new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -255,6 +255,7 @@ runModac <- function(inputFile,
       myStatTest(exprs = myexprs.norm,
                  meta = mymeta,
                  test = mytest,
+                 request.type = type,
                  comparison = mycomparison,
                  group.ctrl.test = mygroups,
                  group.colors = col_list$group[mygroups],
@@ -282,21 +283,25 @@ runModac <- function(inputFile,
         createRNK(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
                   outFile = paste0(outdir,"/Rnk/Rnk_",mycomparison,".rnk"))
         
-        if (compute_log2fc) {
-          temp_fc_cutoff <- log2(as.numeric(settings["linear_fc_cutoff",1]))
-          outFileName <- paste0(mycomparison,"_log2FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+        if (type == "biocrates") {
+          cat("#### No Signatures for Biocrates analysis since we are using difference of means and not linear or log2 fold change. #### \n")
         } else {
-          temp_fc_cutoff <- as.numeric(settings["linear_fc_cutoff",1])
-          outFileName <- paste0(mycomparison,"_linearFC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+          if (compute_log2fc) {
+            temp_fc_cutoff <- log2(as.numeric(settings["linear_fc_cutoff",1]))
+            outFileName <- paste0(mycomparison,"_log2FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+          } else {
+            temp_fc_cutoff <- as.numeric(settings["linear_fc_cutoff",1])
+            outFileName <- paste0(mycomparison,"_linearFC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+          }
+          
+          source(paste0(scriptPath,"/createSignature.R"))
+          createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
+                          outFileName = outFileName,
+                          outDir = paste0(outdir,"/Signature/"),
+                          fcCutoff = temp_fc_cutoff,
+                          statType = settings["padj_method",1],
+                          statCutoff = as.numeric(settings["padj_cutoff",1]))
         }
-        
-        source(paste0(scriptPath,"/createSignature.R"))
-        createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
-                        outFileName = outFileName,
-                        outDir = paste0(outdir,"/Signature/"),
-                        fcCutoff = temp_fc_cutoff,
-                        statType = settings["padj_method",1],
-                        statCutoff = as.numeric(settings["padj_cutoff",1]))
         
         if (type == "rppa") {
           # For RPPA analysis, saving 1 signature file with antibody names and another with gene symbols
@@ -322,18 +327,22 @@ runModac <- function(inputFile,
           
         }
       }
-      
-      # volcano plots
-      # if compute_log2fc is F, volcano plots should not be generated and a message should be displayed
-      source(paste0(scriptPath,"/plotVolcano.R"))
-      if (compute_log2fc & mytest == "t-test") {
-        plotVolcano(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
-                    myComparison = mycomparison,
-                    outDir = paste0(outdir, "/volcano_plots/"),
-                    fcCutoff = as.numeric(settings["linear_fc_cutoff",1]),
-                    padjCutoff = as.numeric(settings["padj_cutoff",1]),
-                    padjMethod = settings["padj_method",1])
+      if (type == "biocrates") {
+        cat("#### No Volcano Plots for Biocrates analysis since we are using difference of means and not linear or log2 fold change. #### \n")
+      } else {
+        # volcano plots
+        # if compute_log2fc is F, volcano plots should not be generated and a message should be displayed
+        source(paste0(scriptPath,"/plotVolcano.R"))
+        if (compute_log2fc & mytest == "t-test") {
+          plotVolcano(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
+                      myComparison = mycomparison,
+                      outDir = paste0(outdir, "/volcano_plots/"),
+                      fcCutoff = as.numeric(settings["linear_fc_cutoff",1]),
+                      padjCutoff = as.numeric(settings["padj_cutoff",1]),
+                      padjMethod = settings["padj_method",1])
+        }
       }
+      
       # heatmaps
       source(paste0(scriptPath,"/plotHeatmap.R"))
       plotHeatmap(exprs = myexprs.norm,
@@ -384,8 +393,8 @@ runModac <- function(inputFile,
     file.remove(file_path)
   }
   
-  # Stop the parallel backend
-  stopCluster(cl)
+  # # Stop the parallel backend
+  # stopCluster(cl)
 
   # End log
   sink(NULL)
