@@ -35,6 +35,8 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     # convert all columns to numeric
     inputdf[] <- lapply(inputdf, as.numeric)
     
+    rawdf <- inputdf
+    
     if(any(is.na(inputdf))) {
       if (!(is.null(replaceNA))) {
         print(cat("##### Replacing", sum(is.na(inputdf)),"NAs with", replaceNA,"#####\n"))
@@ -55,7 +57,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     
     if (normalization == "none") {
       
-      all.exprs.raw[[i]] <- inputdf
+      all.exprs.raw[[i]] <- rawdf
       
       # log2 transform
       if(log2TF){
@@ -76,9 +78,9 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       # saving qc row start idx
       qc.idx <- as.numeric(settings["QC_row",1])-1
       if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
-        all.exprs.raw[[i]] <- inputdf
+        all.exprs.raw[[i]] <- rawdf
       } else {
-        all.exprs.raw[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),] 
+        all.exprs.raw[[i]] <- rawdf[-c(qc.idx:nrow(rawdf)),] 
       }
       
       if (normalization == "istd") {
