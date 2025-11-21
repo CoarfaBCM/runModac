@@ -1,4 +1,4 @@
-preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAreRows = T) {
+preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAreRows = T, replaceNA = NULL, replaceZeros = NULL) {
   
   all.methods <- excel_sheets(inputFile)
   settings <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = "settings", n_max = 9, col_names = F), row.names = 1, check.rows = F))
@@ -35,19 +35,29 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     # convert all columns to numeric
     inputdf[] <- lapply(inputdf, as.numeric)
     
+    rawdf <- inputdf
+    
     if(any(is.na(inputdf))) {
-      print(cat("##### Replacing", sum(is.na(inputdf)),"NAs with 1 #####\n"))
-      inputdf[is.na(inputdf)] <- 1 
+      if (!(is.null(replaceNA))) {
+        print(cat("##### Replacing", sum(is.na(inputdf)),"NAs with", replaceNA,"#####\n"))
+        inputdf[is.na(inputdf)] <- replaceNA 
+      } else {
+        cat("##### Data contains", sum(is.na(inputdf)),"NAs and replaceNA = NULL hence keeping all NAs as is. #####\n")
+      }
     }
     
-    if(log2TF & any(inputdf == 0)) {
-      print(cat("##### Since data has to be log2 transformed, replacing", sum(inputdf == 0),"zeros with 1 #####\n"))
-      inputdf[inputdf == 0] <- 1 
+    if(any(inputdf == 0, na.rm = T)) {
+      if (!(is.null(replaceZeros))) {
+        print(cat("##### Replacing", sum(inputdf == 0),"zeros with", replaceZeros, "#####\n"))
+        inputdf[inputdf == 0] <- replaceZeros
+      } else {
+        cat("##### Data contains", sum(inputdf == 0),"Zeros and replaceZeros = NULL hence keeping all Zeros as is. #####\n")
+      }
     }
     
     if (normalization == "none") {
       
-      all.exprs.raw[[i]] <- inputdf
+      all.exprs.raw[[i]] <- rawdf
       
       # log2 transform
       if(log2TF){
@@ -67,8 +77,11 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     } else {
       # saving qc row start idx
       qc.idx <- as.numeric(settings["QC_row",1])-1
-      
-      all.exprs.raw[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),]
+      if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
+        all.exprs.raw[[i]] <- rawdf
+      } else {
+        all.exprs.raw[[i]] <- rawdf[-c(qc.idx:nrow(rawdf)),] 
+      }
       
       if (normalization == "istd") {
         source(paste0(scriptPath,"/normISTD.R"))
@@ -126,34 +139,38 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       #           quote = F,
       #           row.names = F)
       
-      temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]))
-      
-      mar.def <- par()$mar
-      
-      pdf(paste(myoutdir,paste0("qc_dist_",mymethod,".pdf"),sep = "/"))
-      par(mar = mar.def + c(5,0,-3,0))
-      boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
-      dev.off()
-
-      jpeg(paste(myoutdir,paste0("qc_dist_",mymethod,".jpg"),sep = "/"))
-      par(mar = mar.def + c(5,0,-3,0))
-      boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
-      dev.off()
-      
-      par(mar = mar.def)
-      dev.off()
-      
-      # write.table(temp,
-      #             paste(myoutdir,paste0("qc_dist_",mymethod,".xls"),sep = "/"),
-      #             sep = "\t",
-      #             quote = F,
-      #             row.names = F)
-      write.xlsx(temp,
-                 file.path(myoutdir,paste0("qc_dist_",mymethod,".xlsx")),
-                 rowNames = F,
-                 overwrite = T)
-      
-      all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),,drop=F] #dropping QC samples
+      if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
+        all.exprs.norm[[i]] <- inputdf
+      } else {
+        temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]))
+        
+        mar.def <- par()$mar
+        
+        pdf(paste(myoutdir,paste0("qc_dist_",mymethod,".pdf"),sep = "/"))
+        par(mar = mar.def + c(5,0,-3,0))
+        boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
+        dev.off()
+        
+        jpeg(paste(myoutdir,paste0("qc_dist_",mymethod,".jpg"),sep = "/"))
+        par(mar = mar.def + c(5,0,-3,0))
+        boxplot(temp[,-1], ylab="Relative abundance", las = 2, cex.axis = 0.8)
+        dev.off()
+        
+        par(mar = mar.def)
+        dev.off()
+        
+        # write.table(temp,
+        #             paste(myoutdir,paste0("qc_dist_",mymethod,".xls"),sep = "/"),
+        #             sep = "\t",
+        #             quote = F,
+        #             row.names = F)
+        write.xlsx(temp,
+                   file.path(myoutdir,paste0("qc_dist_",mymethod,".xlsx")),
+                   rowNames = F,
+                   overwrite = T)
+        
+        all.exprs.norm[[i]] <- inputdf[-c(qc.idx:nrow(inputdf)),,drop=F] #dropping QC samples
+      }
     }
     
     pdf(paste0(myoutdir,"/boxplot_",mymethod,".pdf"))

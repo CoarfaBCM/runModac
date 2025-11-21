@@ -9,14 +9,25 @@ runModac <- function(inputFile,
                      scriptPath,
                      samplesAreRows = T,
                      sampleIDRow = 2,
-                     min_signal = NULL) {
+                     min_signal = NULL,
+                     replaceNA = NULL,
+                     replaceZeros = NULL,
+                     onlyNorm = F) {
   
   # Loading required packages and installing ones not present
   # list.of.packages <- c("foreach","doParallel")
   # new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
   # if(length(new.packages)>0) {install.packages(new.packages)} else {lapply(list.of.packages, require, character.only = TRUE)}
   
-  # creating function to install and load packages
+  # Creating output root directory
+  source(paste0(scriptPath,"/createDir.R"))
+  createDir(outdir)
+  
+  # Start log
+  logfilename <- paste0("runMODAC.log.",format(Sys.time(), "%m%d%y_%H%M%S"),".txt")
+  sink(file = paste(outdir, logfilename, sep = "/"), split = TRUE)
+  
+  # Creating function to install and load packages
   install_pkg <- function(pkg) {
     if (!require(pkg, character.only = TRUE)) {
       install.packages(pkg, dependencies = TRUE)
@@ -24,23 +35,23 @@ runModac <- function(inputFile,
     library(pkg, character.only = TRUE)
   }
   
-  # setting CRAN mirror
+  # Setting CRAN mirror
   options(repos = c(CRAN = "https://cran.r-project.org"))
   
-  # installing required packages
+  # Installing required packages
   list.of.packages <- c("foreach","doParallel")
   lapply(list.of.packages, install_pkg)
   
-  # Set the number of cores to use
-  num_cores <- 4
-
-  # Register the parallel backend
-  cl <- makeCluster(num_cores, outfile="")
-  registerDoParallel(cl)
-
-  # Convert the loop to parallel using foreach
-  foreach(i = 1) %dopar% {
-  # for (i in 1) {
+  # # Set the number of cores to use
+  # num_cores <- 4
+  # 
+  # # Register the parallel backend
+  # cl <- makeCluster(num_cores, outfile="")
+  # registerDoParallel(cl)
+  # 
+  # # Convert the loop to parallel using foreach
+  # foreach(i = 1) %dopar% {
+  for (i in 1) {
     # Loading required packages and installing ones not present
     # list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
     # new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -86,13 +97,17 @@ runModac <- function(inputFile,
                             comparisonsFile = comparisonsFile,
                             outdir = outdir,
                             scriptPath = scriptPath,
-                            samplesAreRows = F)
+                            samplesAreRows = F,
+                            replaceNA = NULL,
+                            replaceZeros = NULL)
     } else {
       exprsdf <- preProcess(inputFile = inputFile,
                             comparisonsFile = comparisonsFile,
                             outdir = outdir,
                             scriptPath = scriptPath,
-                            samplesAreRows = samplesAreRows)
+                            samplesAreRows = samplesAreRows,
+                            replaceNA = NULL,
+                            replaceZeros = NULL)
     }
     print(cat("##### Preprocessing complete #####\n\n"))
     
@@ -120,6 +135,10 @@ runModac <- function(inputFile,
     par(mar = mar.def)
     dev.off()
     
+    # stop here if only normalization requested
+    if (onlyNorm) {
+      print("##### Normalization complete. No further downstream analysis requested. #####")
+    } else {
     # reading in all comparisons
     all.comparisons <- excel_sheets(comparisonsFile)[-1]
     all.comparison.labels <- c()
@@ -161,21 +180,53 @@ runModac <- function(inputFile,
       mygroups <- suppressMessages(as.character(read_excel(comparisonsFile, trim_ws = T, sheet = i+1, skip = 2, n_max = 1, col_names = F))[-1])
       mymeta <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], skip = 3), row.names = 2, check.rows = F))
       mymeta <- mymeta[mymeta[,1] %in% mygroups, , drop = F]
-      myexprs.raw <- exprsdf[["raw"]][rownames(mymeta),, drop=F]
-      myexprs.norm <- exprsdf[["norm"]][rownames(mymeta),, drop=F]
       
-      # filtering out features for which none of the samples in this comparison have signal > min_signal
-      if (!(is.null(min_signal))) {
-        print(cat("##### Filtering out features by min_signal cutoff =", min_signal,"#####\n"))
-        if (min_signal == 0) {
-          keep <- apply(myexprs.raw,2,function(x){any(x>min_signal)})
-        } else {
-          keep <- apply(myexprs.raw,2,function(x){any(x>=min_signal)}) 
-        }
-        print(cat("##### Dropping", length(keep)-sum(keep),"out of the", length(keep)," total features #####\n"))
-        myexprs.raw <- myexprs.raw[,keep,drop=F]
-        myexprs.norm <- myexprs.norm[,keep,drop=F] 
+      commonsamples <- intersect(rownames(exprsdf[["raw"]]), rownames(mymeta))
+      print(cat("##### Number of samples in current comparison:", nrow(mymeta), "#####\n"))
+      print(cat("##### Number of samples in input data:", nrow(exprsdf[["raw"]]), "#####\n"))
+      print(cat("##### Number of samples common between current comparison and input data:", length(commonsamples), "#####\n"))
+      
+      if (nrow(mymeta) > length(commonsamples)){
+        print(cat("##### Number of samples present in current comparison but not in input:", nrow(mymeta)-length(commonsamples), "#####\n"))
+        print(cat("##### Samples present in current comparison but not in input:", rownames(mymeta)[!(rownames(mymeta) %in% rownames(exprsdf[["raw"]]))], "#####\n"))
+        print(cat("##### The above mentioned non matching samples are dropped from analysis of this comparison #####\n"))
       }
+      
+      if (nrow(exprsdf[["raw"]]) > length(commonsamples)){
+        print(cat("##### Number of samples present in input but not in current comparison:", nrow(exprsdf[["raw"]])-length(commonsamples), "#####\n"))
+        print(cat("##### Samples present in input but not in current comparison:", rownames(exprsdf[["raw"]])[!(rownames(exprsdf[["raw"]]) %in% rownames(mymeta))], "#####\n"))
+        print(cat("##### The above mentioned non matching samples are dropped from analysis of this comparison #####\n"))
+      }
+      
+      myexprs.raw <- exprsdf[["raw"]][commonsamples,, drop=F]
+      myexprs.norm <- exprsdf[["norm"]][commonsamples,, drop=F]
+      
+      dropZeroVarArrays <- function(inputdf, checkRows = F, checkCols = T){
+        if (checkCols) {
+          flag <- colSums(inputdf, na.rm = T) == 0 | colSums(!is.na(inputdf)) == 0
+          if (any(flag, na.rm = T)) {
+            print(cat("##### Dropping features with no expression or missing values across all samples for this comparison #####\n"))
+            print(cat("##### Number of features dropped:", length(flag), "#####\n"))
+            print(cat("##### Exact features dropped:", colnames(inputdf)[!flag], "#####\n"))
+            inputdf <- inputdf[,!flag, drop=F]
+          }
+        }
+        
+        if (checkRows) {
+          flag <- rowSums(inputdf, na.rm = T) == 0 | rowSums(!is.na(inputdf)) == 0
+          if (any(flag, na.rm = T)) {
+            print(cat("##### Dropping samples with no expression or missing values across all features for this comparison #####\n"))
+            print(cat("##### Number of samples dropped:", length(flag), "#####\n"))
+            print(cat("##### Exact samples dropped:", rownames(inputdf)[!flag], "#####\n"))
+            inputdf <- inputdf[!flag,, drop=F]
+          }
+        }
+        
+        return(inputdf)
+      }
+      
+      myexprs.raw <- dropZeroVarArrays(myexprs.raw, checkRows = T, checkCols = F)
+      myexprs.norm <- dropZeroVarArrays(myexprs.norm, checkRows = T, checkCols = F)
       
       # PCA plot
       if (ncol(myexprs.raw) > 1) {
@@ -204,6 +255,7 @@ runModac <- function(inputFile,
       myStatTest(exprs = myexprs.norm,
                  meta = mymeta,
                  test = mytest,
+                 request.type = type,
                  comparison = mycomparison,
                  group.ctrl.test = mygroups,
                  group.colors = col_list$group[mygroups],
@@ -231,21 +283,25 @@ runModac <- function(inputFile,
         createRNK(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
                   outFile = paste0(outdir,"/Rnk/Rnk_",mycomparison,".rnk"))
         
-        if (compute_log2fc) {
-          temp_fc_cutoff <- log2(as.numeric(settings["linear_fc_cutoff",1]))
-          outFileName <- paste0(mycomparison,"_log2FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+        if (type == "biocrates") {
+          cat("#### No Signatures for Biocrates analysis since we are using difference of means and not linear or log2 fold change. #### \n")
         } else {
-          temp_fc_cutoff <- as.numeric(settings["linear_fc_cutoff",1])
-          outFileName <- paste0(mycomparison,"_linearFC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+          if (compute_log2fc) {
+            temp_fc_cutoff <- log2(as.numeric(settings["linear_fc_cutoff",1]))
+            outFileName <- paste0(mycomparison,"_log2FC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+          } else {
+            temp_fc_cutoff <- as.numeric(settings["linear_fc_cutoff",1])
+            outFileName <- paste0(mycomparison,"_linearFC",round(temp_fc_cutoff,2),"_",settings["padj_method",1],settings["padj_cutoff",1])
+          }
+          
+          source(paste0(scriptPath,"/createSignature.R"))
+          createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
+                          outFileName = outFileName,
+                          outDir = paste0(outdir,"/Signature/"),
+                          fcCutoff = temp_fc_cutoff,
+                          statType = settings["padj_method",1],
+                          statCutoff = as.numeric(settings["padj_cutoff",1]))
         }
-        
-        source(paste0(scriptPath,"/createSignature.R"))
-        createSignature(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
-                        outFileName = outFileName,
-                        outDir = paste0(outdir,"/Signature/"),
-                        fcCutoff = temp_fc_cutoff,
-                        statType = settings["padj_method",1],
-                        statCutoff = as.numeric(settings["padj_cutoff",1]))
         
         if (type == "rppa") {
           # For RPPA analysis, saving 1 signature file with antibody names and another with gene symbols
@@ -258,33 +314,35 @@ runModac <- function(inputFile,
           sigdf1[1,1] <- tempName
           write_tsv(x = sigdf1,
                     file = tempFileName,
-                    col_names = FALSE,
-                    na = "")
+                    col_names = FALSE)
           
           # sigdf[1,1] <- tempName
           
           sigdf$X1[-1] <- unname(sapply(sigdf$X1[-1], function(x){tempdf$GeneSymbol[tempdf$AB_name == x]}))
-          
+          sigdf <- sigdf[!is.na(sigdf[,1]), ,drop=F] # drop rows where antibody gene symbol is NA
           tempFileName <- paste0(outdir,"/Signature/sig.",outFileName,".txt")
           write_tsv(x = sigdf,
                     file = tempFileName,
-                    col_names = FALSE,
-                    na = "")
+                    col_names = FALSE)
           
         }
       }
-      
-      # volcano plots
-      # if compute_log2fc is F, volcano plots should not be generated and a message should be displayed
-      source(paste0(scriptPath,"/plotVolcano.R"))
-      if (compute_log2fc & mytest == "t-test") {
-        plotVolcano(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
-                    myComparison = mycomparison,
-                    outDir = paste0(outdir, "/volcano_plots/"),
-                    fcCutoff = as.numeric(settings["linear_fc_cutoff",1]),
-                    padjCutoff = as.numeric(settings["padj_cutoff",1]),
-                    padjMethod = settings["padj_method",1])
+      if (type == "biocrates") {
+        cat("#### No Volcano Plots for Biocrates analysis since we are using difference of means and not linear or log2 fold change. #### \n")
+      } else {
+        # volcano plots
+        # if compute_log2fc is F, volcano plots should not be generated and a message should be displayed
+        source(paste0(scriptPath,"/plotVolcano.R"))
+        if (compute_log2fc & mytest == "t-test") {
+          plotVolcano(reportFile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison,".xlsx"),
+                      myComparison = mycomparison,
+                      outDir = paste0(outdir, "/volcano_plots/"),
+                      fcCutoff = as.numeric(settings["linear_fc_cutoff",1]),
+                      padjCutoff = as.numeric(settings["padj_cutoff",1]),
+                      padjMethod = settings["padj_method",1])
+        }
       }
+      
       # heatmaps
       source(paste0(scriptPath,"/plotHeatmap.R"))
       plotHeatmap(exprs = myexprs.norm,
@@ -324,6 +382,7 @@ runModac <- function(inputFile,
                template_pptx_path = template_pptx_path)
     
     writeLines(capture.output(sessionInfo()), paste0(outdir,"/sessionInfo.txt"))
+    }
   }
   
   # Check if "Rplots.pdf" exists in the current directory
@@ -334,6 +393,9 @@ runModac <- function(inputFile,
     file.remove(file_path)
   }
   
-  # Stop the parallel backend
-  stopCluster(cl)
+  # # Stop the parallel backend
+  # stopCluster(cl)
+
+  # End log
+  sink(NULL)
 }

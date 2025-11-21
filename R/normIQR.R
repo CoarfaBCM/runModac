@@ -28,8 +28,14 @@ normIQR <- function(inputdf, comparisonsFile) {
   })), row.names = rownames(inputdf))
   colnames(newdf) <- colnames(inputdf)
   
+  if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
+    return_qc_num <- 0
+  } else {
+    return_qc_num <- length(qc.idx:nrow(inputdf))
+  }
+  
   return(list(data = newdf,
-              qc_num = length(qc.idx:nrow(inputdf))
+              qc_num = return_qc_num
               )
          )
 }

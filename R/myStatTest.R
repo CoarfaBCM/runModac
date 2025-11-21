@@ -1,6 +1,7 @@
 myStatTest <- function(exprs,
                        meta,
                        test,
+                       request.type,
                        comparison,
                        group.ctrl.test,
                        group.colors,
@@ -52,13 +53,17 @@ myStatTest <- function(exprs,
     
     if (diff.space == "log2") {
       # here, data is already transformed to log2 space in the pre processing step
-      log2FC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, mean) - apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, mean)
+      log2FC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, function(x){mean(x, na.rm=T)}) - apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, function(x){mean(x, na.rm=T)})
       linearFC <- 2^log2FC
     } else if (diff.space == "linear") {
-      # here, data is already transformed to linear space in the pre processing step
-      linearFC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, mean)/apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, mean)
-      if (compute.log2fc) {
-        log2FC <- log2(linearFC) 
+      if (request.type == "biocrates") {
+        diffMeans <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, function(x){mean(x, na.rm=T)}) - apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, function(x){mean(x, na.rm=T)})
+      } else {
+        # here, data is already transformed to linear space in the pre processing step
+        linearFC <- apply(exprs[meta[,1] == test.group, ,drop=F], 2, function(x){mean(x, na.rm=T)})/apply(exprs[meta[,1] == ctrl.group, ,drop=F], 2, function(x){mean(x, na.rm=T)})
+        if (compute.log2fc) {
+          log2FC <- log2(linearFC) 
+        }
       }
     }
     
@@ -67,7 +72,11 @@ myStatTest <- function(exprs,
     if (compute.log2fc) {
       reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, linear_fc = linearFC, log2_fc = log2FC, row.names = NULL)
     } else {
-      reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, linear_fc = linearFC, row.names = NULL)
+      if (request.type == "biocrates") {
+        reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, diff_means = diffMeans, row.names = NULL)
+      } else {
+        reportdf <- data.frame(ID = colnames(exprs), pval = all.pvals, fdr = all.fdr, linear_fc = linearFC, row.names = NULL)
+      }
     }
     
     reportdf <- reportdf[order(reportdf$fdr), ,drop=F]
