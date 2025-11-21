@@ -228,19 +228,6 @@ runModac <- function(inputFile,
       myexprs.raw <- dropZeroVarArrays(myexprs.raw, checkRows = T, checkCols = F)
       myexprs.norm <- dropZeroVarArrays(myexprs.norm, checkRows = T, checkCols = F)
       
-      # filtering out features for which none of the samples in this comparison have signal > min_signal
-      if (!(is.null(min_signal))) {
-        print(cat("##### Filtering out features by min_signal cutoff =", min_signal,"#####\n"))
-        if (min_signal == 0) {
-          keep <- apply(myexprs.raw,2,function(x){any(x>min_signal, na.rm = T)})
-        } else {
-          keep <- apply(myexprs.raw,2,function(x){any(x>=min_signal, na.rm = T)}) 
-        }
-        print(cat("##### Dropping", length(keep)-sum(keep),"out of the", length(keep)," total features #####\n"))
-        myexprs.raw <- myexprs.raw[,keep,drop=F]
-        myexprs.norm <- myexprs.norm[,keep,drop=F] 
-      }
-      
       # PCA plot
       if (ncol(myexprs.raw) > 1) {
         plotPCA(exprs = myexprs.raw,
