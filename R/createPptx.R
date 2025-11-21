@@ -136,36 +136,38 @@ createPptx <- function(project_title = "Project Report",
     pcas_norm<-paste0(outdir,"/pca/pca_norm_",all.comparison.labels[i],".jpg")
     pcas_raw<-paste0(outdir,"/pca/pca_raw_",all.comparison.labels[i],".jpg")
     
-    report<-report%>%add_slide(layout="Comparison",master="Custom Design")
-    report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",all.comparison.labels[i]))
-    
-    if (normalization == "none") {
-      if (log2TF) {
-        temp1 <- "Log2 Transformed PCA"
-      } else if (linearTF) {
-        temp1 <- "Linear Transformed PCA"
+    if(file.exists(pcas_raw) | file.exists(pcas_norm)) {
+      report<-report%>%add_slide(layout="Comparison",master="Custom Design")
+      report<-report%>%ph_with(location=ph_location_type("title"),value=str_c("Comparison ",all.comparison.labels[i]))
+      
+      if (normalization == "none") {
+        if (log2TF) {
+          temp1 <- "Log2 Transformed PCA"
+        } else if (linearTF) {
+          temp1 <- "Linear Transformed PCA"
+        } else {
+          temp1 <- "Prenormalized PCA"
+        }
+        temp2 <- "Prenormalized PCA"
       } else {
-        temp1 <- "Prenormalized PCA"
+        temp1 <- "Normalized PCA"
+        temp2 <- "Raw PCA"
       }
-      temp2 <- "Prenormalized PCA"
-    } else {
-      temp1 <- "Normalized PCA"
-      temp2 <- "Raw PCA"
-    }
-    report<-report%>%ph_with(location=ph_location_type("body", id=3),value=temp1)
-    report<-report%>%ph_with(location=ph_location_type("body", id=1),value=temp2)
-    
-    if(file.exists(pcas_norm)){
-      img<-readJPEG(pcas_norm)
-      height<-dim(img)[1]/96
-      width<-dim(img)[2]/96
-      report<-report%>%ph_with(value=external_img(pcas_norm),ph_location(left = 5.08,top = 1.56,width = 4.5,height = 4.25/width*height))
-    }
-    if(file.exists(pcas_raw)){
-      img<-readJPEG(pcas_raw)
-      height<-dim(img)[1]/96
-      width<-dim(img)[2]/96
-      report<-report%>%ph_with(value=external_img(pcas_raw),ph_location(left = 0.5,top = 1.56,width = 4.5,height = 4.25/width*height))
+      report<-report%>%ph_with(location=ph_location_type("body", id=3),value=temp1)
+      report<-report%>%ph_with(location=ph_location_type("body", id=1),value=temp2)
+      
+      if(file.exists(pcas_norm)){
+        img<-readJPEG(pcas_norm)
+        height<-dim(img)[1]/96
+        width<-dim(img)[2]/96
+        report<-report%>%ph_with(value=external_img(pcas_norm),ph_location(left = 5.08,top = 1.56,width = 4.5,height = 4.25/width*height))
+      }
+      if(file.exists(pcas_raw)){
+        img<-readJPEG(pcas_raw)
+        height<-dim(img)[1]/96
+        width<-dim(img)[2]/96
+        report<-report%>%ph_with(value=external_img(pcas_raw),ph_location(left = 0.5,top = 1.56,width = 4.5,height = 4.25/width*height))
+      }
     }
   }
   
