@@ -89,7 +89,7 @@ createPptx <- function(project_title = "Project Report",
   report<-report%>%ph_with(location=ph_location_type("title"),value="Project Overview")
   if (qc_sample_number == 0) {
     ul_levels <- c(1,2,
-                   1,2,
+                   1,rep(2,number_of_methods),
                    1,comparison_levels)
     ul_str <- c("Samples",
                 paste0(sample_number," experimental samples"),
