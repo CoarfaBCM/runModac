@@ -11,7 +11,7 @@ runModac <- function(inputFile,
                      sampleIDRow = 2,
                      min_signal = NULL,
                      replaceNA = NULL,
-                     replaceZeros = NULL,
+                     replaceZeros = NULL, # set to 1 for non-biocrates metabolomics core requests as per core request
                      onlyNorm = F) {
   
   # Loading required packages and installing ones not present
