@@ -123,13 +123,15 @@ myStatTest <- function(exprs,
     mytitle <- paste0(colnames(exprs)[i]," (FDR = ",round(all.fdr[i],2),")")
     par(cex.main=0.7)
     par(cex.axis=0.5)
-    boxplot(unlist(exprs[,i]) ~ factor(meta[,1], levels = group.ctrl.test),
-            col = group.colors,
-            xlab = NULL,
-            ylab = NULL,
-            main=mytitle,
-            las=2,
-            outline = F)
+    if (!(all(is.na(unlist(exprs[,i]))))) {
+      boxplot(unlist(exprs[,i]) ~ factor(meta[,1], levels = group.ctrl.test),
+              col = group.colors,
+              xlab = NULL,
+              ylab = NULL,
+              main=mytitle,
+              las=2,
+              outline = F)
+    }
   }
   dev.off()
 }
