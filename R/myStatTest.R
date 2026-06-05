@@ -40,16 +40,16 @@ myStatTest <- function(exprs,
       stop(cat("\n######## ERROR WITH COMPARISON NAME:", comparison,"########",
                "\n######## T-test comparison name format is 'test_over_control' ########\n"))
     }
-    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
-                                                     t.test(x~meta[,1])$p.value,
-                                                     1)})
+    # all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
+    #                                                  t.test(x~meta[,1])$p.value,
+    #                                                  1)})
     
     # code for paired t-test. make sure same number of samples in both groups
-    # all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
-    #                                                  t.test(x[meta[,1] == test.group],
-    #                                                         x[meta[,1] == ctrl.group],
-    #                                                         paired = T)$p.value,
-    #                                                  1)})
+    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
+                                                     t.test(x[meta[,1] == test.group],
+                                                            x[meta[,1] == ctrl.group],
+                                                            paired = T)$p.value,
+                                                     1)})
     
     if (diff.space == "log2") {
       # here, data is already transformed to log2 space in the pre processing step
