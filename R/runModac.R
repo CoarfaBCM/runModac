@@ -24,7 +24,7 @@
 #                                      Test and Control columns are ignored
 #                           "limma"  — limma moderated t-test (lmFit / makeContrasts / eBayes)
 #                                      fitted on Test + Control samples only;
-#                                      Test and Control must be filled;
+#                                      Test and Control must be filled;     
 #                                      differential_analysis_space must be "log2" — the
 #                                      comparison is skipped with a warning otherwise
 #                           "limma-full" — same as "limma" but lmFit is run on ALL samples
