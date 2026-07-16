@@ -41,11 +41,26 @@ createPptx <- function(project_title = "Project Report",
                         })
   } else if (normalization == "none") {
     if (log2TF) {
-      norm_method<-c("Data was prenormalized and transformed to log2 space")
+      # norm_method<-c("Data was prenormalized and transformed to log2 space")
+      norm_method<-sapply(1:number_of_methods,
+                          function(x){
+                            paste0(exprsdf$methods[x],
+                                   " was prenormalized and transformed to log2 space")
+                          })
     } else if (linearTF) {
-      norm_method<-c("Data was prenormalized and transformed to linear space") 
+      # norm_method<-c("Data was prenormalized and transformed to linear space")
+      norm_method<-sapply(1:number_of_methods,
+                          function(x){
+                            paste0(exprsdf$methods[x],
+                                   " was prenormalized and transformed to linear space")
+                          })
     } else {
-      norm_method<-c("Data was prenormalized") 
+      # norm_method<-c("Data was prenormalized")
+      norm_method<-sapply(1:number_of_methods,
+                          function(x){
+                            paste0(exprsdf$methods[x],
+                                   " was prenormalized")
+                          })
     }
   }
   
