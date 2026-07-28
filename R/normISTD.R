@@ -22,13 +22,13 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   istd.idx <- istd.info[mymethod, "ISTD_column"]-1
   
   if(ncol(inputdf) == istd.idx) {
-    cv <- sd(inputdf.noqc[,istd.idx])/mean(inputdf.noqc[,istd.idx])
+    cv <- sd(inputdf.noqc[,istd.idx], na.rm = TRUE)/mean(inputdf.noqc[,istd.idx], na.rm = TRUE)
   } else {
     all.istd.idx <- istd.idx:ncol(inputdf)
-    cv <- sapply(all.istd.idx, function(x){sd(inputdf.noqc[,x])/mean(inputdf.noqc[,x])})
-    keep <- all.istd.idx[which(cv == min(cv))]
+    cv <- sapply(all.istd.idx, function(x){sd(inputdf.noqc[,x], na.rm = TRUE)/mean(inputdf.noqc[,x], na.rm = TRUE)})
+    keep <- all.istd.idx[which(cv == min(cv, na.rm = TRUE))]
     inputdf <- inputdf[,c(1:(istd.idx-1),keep)]
-    cv <- min(cv)
+    cv <- min(cv, na.rm = TRUE)
   }
   
   # checking if cv meets user specified cv cutoff
@@ -51,7 +51,7 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   
   pdf(paste(myoutdir,paste0("dIS_dist_",mymethod,".pdf"),sep = "/"))
   plot(temp,
-       ylim = c(ceiling(mean(temp))-4, ceiling(mean(temp))+4),
+       ylim = c(ceiling(mean(temp, na.rm = TRUE))-4, ceiling(mean(temp, na.rm = TRUE))+4),
        xlim = c(0,nrow(inputdf)),
        xlab = "Samples",
        ylab = "Log2 ISTD",
@@ -63,7 +63,7 @@ normISTD <- function(inputdf, comparisonsFile, myoutdir, mymethod) {
   
   jpeg(paste(myoutdir,paste0("dIS_dist_",mymethod,".jpg"),sep = "/"))
   plot(temp,
-       ylim = c(ceiling(mean(temp))-4, ceiling(mean(temp))+4),
+       ylim = c(ceiling(mean(temp, na.rm = TRUE))-4, ceiling(mean(temp, na.rm = TRUE))+4),
        xlim = c(0,nrow(inputdf)),
        xlab = "Samples",
        ylab = "Log2 ISTD",

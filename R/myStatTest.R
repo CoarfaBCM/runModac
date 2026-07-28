@@ -40,8 +40,8 @@ myStatTest <- function(exprs,
       stop(cat("\n######## ERROR WITH COMPARISON NAME:", comparison,"########",
                "\n######## T-test comparison name format is 'test_over_control' ########\n"))
     }
-    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
-                                                     t.test(x~meta[,1])$p.value,
+    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x, na.rm = T) > 0,
+                                                     t.test(x~meta[,1], na.rm = T)$p.value,
                                                      1)})
     
     # code for paired t-test. make sure same number of samples in both groups
@@ -92,8 +92,8 @@ myStatTest <- function(exprs,
                paste0(outdir,"FullReport_",test,"_",comparison,".xlsx"),
                rowNames = F, overwrite = T)
   } else if (test == "anova") {
-    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
-                                                     summary(aov(x~meta[,1]))[[1]][["Pr(>F)"]][1],
+    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x, na.rm = T) > 0,
+                                                     summary(aov(x~meta[,1], na.rm = T))[[1]][["Pr(>F)"]][1],
                                                      1)}) # ANOVA test across study sites for each chemical
     all.fdr <- p.adjust(all.pvals, method = "BH") # FDR correction
     

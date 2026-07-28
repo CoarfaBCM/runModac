@@ -79,8 +79,8 @@ plotHeatmap <- function(exprs,
     #             sep = "\t", append = F, quote = F,
     #             row.names	= F, col.names = T)
     
-    x<-abs(max(scaled_df))
-    y<-abs(min(scaled_df))
+    x<-abs(max(scaled_df, na.rm = TRUE))
+    y<-abs(min(scaled_df, na.rm = TRUE))
     scale<-max(c(x,y))
     # if (heatmap_color_scale == 1) {
     #   heatmap_color_scale <- c("blue", "black", "yellow")
@@ -88,6 +88,14 @@ plotHeatmap <- function(exprs,
     #   heatmap_color_scale <- c("blue", "white", "red")
     # }
     col_heatmap <- colorRamp2(c((-scale)*.75, 0,(scale)*.75), heatmapColorScale)
+
+    # mean-impute (0, since data is z-scored) for clustering distance only;
+    # the displayed matrix keeps the real NAs
+    clustDistRows <- function(m) {
+      m[is.na(m)] <- 0
+      dist(m)
+    }
+
     col_list <- list(group=groupColors)
     names(col_list$group) <- groupOrder
     
@@ -97,7 +105,7 @@ plotHeatmap <- function(exprs,
     if (nrow(scaled_df) > 100) {
       ht<-Heatmap(matrix = as.matrix(scaled_df),
                   top_annotation = ha1,
-                  clustering_distance_rows = "euclidean",
+                  clustering_distance_rows = clustDistRows,
                   name = "z-score",
                   column_names_side = "bottom",
                   col=col_heatmap,
@@ -112,7 +120,7 @@ plotHeatmap <- function(exprs,
     } else {
       ht<-Heatmap(matrix = as.matrix(scaled_df),
                   top_annotation = ha1,
-                  clustering_distance_rows = "euclidean",
+                  clustering_distance_rows = clustDistRows,
                   name = "z-score",
                   column_names_side = "bottom",
                   col=col_heatmap,
