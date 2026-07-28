@@ -10,7 +10,11 @@ runModac(inputFile = "~/Box/runModac/examples/input-metabolomics.xlsx",
          # heatmap_color_scale = c("blue","white","red"),
          # samplesAreRows = T,
          # sampleIDRow = 2,
+         # filter = 1, # missingness filter: drop a feature if >(filter*100)% missing in ANY comparison group (1 = off). A per-group "at least 2 non-missing" rule is always enforced.
          # min_signal = NULL,
+         # replaceNA = NULL,
+         # replaceZeros = NULL, # set to 1 for non-biocrates metabolomics core requests as per core request
+         # onlyNorm = F,
          scriptPath = "~/Box/runModac/R/")
 
 # example2-iqr

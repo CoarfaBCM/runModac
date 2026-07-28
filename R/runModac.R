@@ -1,18 +1,20 @@
 
-runModac <- function(inputFile,
-                     comparisonsFile,
-                     type,
-                     outdir = "results",
-                     project_title = "Report",
-                     project_subtitle = "by",
-                     heatmap_color_scale = c("blue", "black", "yellow"),
-                     scriptPath,
-                     samplesAreRows = T,
-                     sampleIDRow = 2,
-                     min_signal = NULL,
-                     replaceNA = NULL,
-                     replaceZeros = NULL, # set to 1 for non-biocrates metabolomics core requests as per core request
-                     onlyNorm = F) {
+runModac <- function(inputFile, # path to input data Excel file
+                     comparisonsFile, # path to Excel file defining comparisons, groups, and settings
+                     type, # analysis type: "metabolomics", "rppa", "biocrates", or "none"
+                     outdir = "results", # directory where all outputs are written
+                     project_title = "Report", # title shown on the PPTX report
+                     project_subtitle = "by", # subtitle shown on the PPTX report
+                     heatmap_color_scale = c("blue", "black", "yellow"), # low/mid/high colors for heatmaps
+                     samplesAreRows = T, # TRUE if input sheets have samples as rows (FALSE if transposed)
+                     sampleIDRow = 2, # which metadata row/column holds sample IDs (used for RPPA aggregation)
+                     max_missing_frac = 1, # missingness filter: drop a feature if >(max_missing_frac*100)% missing in ANY comparison group (1 = off). A per-group "at least 2 non-missing" rule is always enforced.
+                     min_signal = NULL, # drop a feature if no sample (raw) exceeds this signal cutoff (NULL = off)
+                     replaceNA = NULL, # value to replace NAs with before normalization (NULL = leave as NA)
+                     replaceZeros = NULL, # value to replace zeros with before normalization (NULL = leave as 0; set to 1 for non-biocrates metabolomics core requests as per core request)
+                     onlyNorm = F, # if TRUE, stop after normalization/QC (skip stats, plots, reports)
+                     scriptPath # directory containing the pipeline's R scripts
+                     ) {
   
   # Loading required packages and installing ones not present
   # list.of.packages <- c("foreach","doParallel")
@@ -42,16 +44,16 @@ runModac <- function(inputFile,
   list.of.packages <- c("foreach","doParallel")
   lapply(list.of.packages, install_pkg)
   
-  # Set the number of cores to use
-  num_cores <- 4
-
-  # Register the parallel backend
-  cl <- makeCluster(num_cores, outfile="")
-  registerDoParallel(cl)
-
-  # Convert the loop to parallel using foreach
-  foreach(i = 1) %dopar% {
-  # for (i in 1) {
+  # # Set the number of cores to use
+  # num_cores <- 4
+  # 
+  # # Register the parallel backend
+  # cl <- makeCluster(num_cores, outfile="")
+  # registerDoParallel(cl)
+  # 
+  # # Convert the loop to parallel using foreach
+  # foreach(i = 1) %dopar% {
+  for (i in 1) {
     # Loading required packages and installing ones not present
     # list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
     # new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
@@ -61,7 +63,7 @@ runModac <- function(inputFile,
     options(repos = c(CRAN = "https://cran.r-project.org"))
     
     # installing required packages
-    list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
+    list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","dplyr","foreach","doParallel")
     lapply(list.of.packages, install_pkg)
     
     # installing complex heatmap
@@ -98,16 +100,16 @@ runModac <- function(inputFile,
                             outdir = outdir,
                             scriptPath = scriptPath,
                             samplesAreRows = F,
-                            replaceNA = NULL,
-                            replaceZeros = NULL)
+                            replaceNA = replaceNA,
+                            replaceZeros = replaceZeros)
     } else {
       exprsdf <- preProcess(inputFile = inputFile,
                             comparisonsFile = comparisonsFile,
                             outdir = outdir,
                             scriptPath = scriptPath,
                             samplesAreRows = samplesAreRows,
-                            replaceNA = NULL,
-                            replaceZeros = NULL)
+                            replaceNA = replaceNA,
+                            replaceZeros = replaceZeros)
     }
     print(cat("##### Preprocessing complete #####\n\n"))
     
@@ -168,6 +170,10 @@ runModac <- function(inputFile,
     
     source(paste0(scriptPath,"/myStatTest.R"))
     source(paste0(scriptPath,"/plotPCA.R"))
+
+    # collect per-comparison dropped-feature reports (written to one workbook after the loop)
+    dropped_reports <- list()
+
     for (i in seq_along(all.comparisons)) {
       # readying inputs
       all.info <- suppressMessages(data.frame(read_excel(comparisonsFile, trim_ws = T, sheet = all.comparisons[i], n_max = 2, col_names = F), row.names = 1, check.rows = F))
@@ -201,13 +207,33 @@ runModac <- function(inputFile,
       myexprs.raw <- exprsdf[["raw"]][commonsamples,, drop=F]
       myexprs.norm <- exprsdf[["norm"]][commonsamples,, drop=F]
       
+      # filtering out features for which none of the samples in this comparison have signal > min_signal
+      min_signal_report <- NULL
+      if (!(is.null(min_signal))) {
+        print(cat("##### Filtering out features by min_signal cutoff =", min_signal,"#####\n"))
+        if (min_signal == 0) {
+          keep <- apply(myexprs.raw,2,function(x){any(x>min_signal, na.rm = TRUE)})
+        } else {
+          keep <- apply(myexprs.raw,2,function(x){any(x>=min_signal, na.rm = TRUE)})
+        }
+        print(cat("##### Dropping", length(keep)-sum(keep),"out of the", length(keep)," total features #####\n"))
+        dropped_ms <- colnames(myexprs.raw)[!keep]
+        if (length(dropped_ms) > 0) {
+          min_signal_report <- data.frame(feature = dropped_ms,
+                                          reason  = paste0("max signal < min_signal (", min_signal, ")"),
+                                          row.names = NULL, check.names = F)
+        }
+        myexprs.raw <- myexprs.raw[,keep,drop=F]
+        myexprs.norm <- myexprs.norm[,keep,drop=F]
+      }
+      
       dropZeroVarArrays <- function(inputdf, checkRows = F, checkCols = T){
         if (checkCols) {
           flag <- colSums(inputdf, na.rm = T) == 0 | colSums(!is.na(inputdf)) == 0
           if (any(flag, na.rm = T)) {
             print(cat("##### Dropping features with no expression or missing values across all samples for this comparison #####\n"))
-            print(cat("##### Number of features dropped:", length(flag), "#####\n"))
-            print(cat("##### Exact features dropped:", colnames(inputdf)[!flag], "#####\n"))
+            print(cat("##### Number of features dropped:", sum(flag), "#####\n"))
+            print(cat("##### Exact features dropped:", colnames(inputdf)[flag], "#####\n"))
             inputdf <- inputdf[,!flag, drop=F]
           }
         }
@@ -216,8 +242,8 @@ runModac <- function(inputFile,
           flag <- rowSums(inputdf, na.rm = T) == 0 | rowSums(!is.na(inputdf)) == 0
           if (any(flag, na.rm = T)) {
             print(cat("##### Dropping samples with no expression or missing values across all features for this comparison #####\n"))
-            print(cat("##### Number of samples dropped:", length(flag), "#####\n"))
-            print(cat("##### Exact samples dropped:", rownames(inputdf)[!flag], "#####\n"))
+            print(cat("##### Number of samples dropped:", sum(flag), "#####\n"))
+            print(cat("##### Exact samples dropped:", rownames(inputdf)[flag], "#####\n"))
             inputdf <- inputdf[!flag,, drop=F]
           }
         }
@@ -227,6 +253,53 @@ runModac <- function(inputFile,
       
       myexprs.raw <- dropZeroVarArrays(myexprs.raw, checkRows = T, checkCols = F)
       myexprs.norm <- dropZeroVarArrays(myexprs.norm, checkRows = T, checkCols = F)
+
+      # Drop features too sparse within any comparison group:
+      #  - missing fraction strictly greater than 'threshold' (the `max_missing_frac` arg) in any group, OR
+      #  - fewer than 'minNonMissing' non-missing samples in any group (always enforced, even when
+      #    max_missing_frac = 1) -- this is what keeps t.test/aov from failing on a near-empty group.
+      dropByMissingness <- function(exprs, meta, groups, threshold, minNonMissing = 2){
+        drop   <- rep(FALSE, ncol(exprs))
+        reason <- rep(NA_character_, ncol(exprs))
+        miss.by.group <- list()
+        nok.by.group  <- list()
+        for (g in groups) {
+          samps <- intersect(rownames(meta)[meta[,1] == g], rownames(exprs))
+          sub   <- exprs[samps, , drop = F]
+          miss  <- colMeans(is.na(sub))    # fraction missing per feature in this group
+          nok   <- colSums(!is.na(sub))     # non-missing count per feature in this group
+          miss.by.group[[g]] <- miss
+          nok.by.group[[g]]  <- nok
+          fail  <- (miss > threshold) | (nok < minNonMissing)
+          new   <- fail & is.na(reason)     # keep the first (most upstream) failing reason
+          reason[new] <- ifelse(nok[new] < minNonMissing,
+                                paste0("<", minNonMissing, " non-missing in group '", g, "'"),
+                                paste0(">", round(threshold*100), "% missing in group '", g, "'"))
+          drop  <- drop | fail
+        }
+        report <- NULL
+        if (any(drop)) {
+          report <- data.frame(feature = colnames(exprs)[drop],
+                               reason  = reason[drop],
+                               row.names = NULL, check.names = F)
+          for (g in groups) {
+            report[[paste0("missing_frac_", g)]] <- round(miss.by.group[[g]][drop], 3)
+            report[[paste0("n_nonmissing_", g)]] <- nok.by.group[[g]][drop]
+          }
+          print(cat("##### Missingness filter: dropping", sum(drop), "features for this comparison (threshold =", threshold, ", min non-missing per group =", minNonMissing, ") #####\n"))
+          print(cat("##### Exact features dropped:", colnames(exprs)[drop], "#####\n"))
+        }
+        return(list(keep = !drop, report = report))
+      }
+
+      # Apply the per-group missingness filter. Compute the mask on the normalized
+      # (analysis) matrix, then drop the same features from raw so PCA/stats/heatmaps
+      # stay on a consistent feature set.
+      missfilt <- dropByMissingness(myexprs.norm, mymeta, mygroups, threshold = max_missing_frac)
+      myexprs.norm <- myexprs.norm[, missfilt$keep, drop = F]
+      if (!is.null(min_signal_report) || !is.null(missfilt$report)) {
+        dropped_reports[[mycomparison]] <- bind_rows(min_signal_report, missfilt$report)
+      }
       
       # PCA plot
       if (ncol(myexprs.raw) > 1) {
@@ -371,6 +444,15 @@ runModac <- function(inputFile,
                   samplesAreRows = T)
     }
     
+    # Write one workbook with a sheet per comparison listing features dropped by the missingness filter
+    if (length(dropped_reports) > 0) {
+      names(dropped_reports) <- make.unique(substr(gsub("[^A-Za-z0-9_. -]", "_", names(dropped_reports)), 1, 31))
+      write.xlsx(dropped_reports,
+                 paste0(outdir, "/report/DroppedFeatures.xlsx"),
+                 rowNames = F, overwrite = T)
+      print(cat("##### Missingness filter: dropped-feature report written to report/DroppedFeatures.xlsx #####\n"))
+    }
+
     source(paste0(scriptPath,"/createPptx.R"))
     template_pptx_path <- paste0(gsub("/R$|/R/$","/data",scriptPath),"/Project_Report_Template.pptx")
     createPptx(project_title = project_title,
@@ -393,8 +475,8 @@ runModac <- function(inputFile,
     file.remove(file_path)
   }
   
-  # Stop the parallel backend
-  stopCluster(cl)
+  # # Stop the parallel backend
+  # stopCluster(cl)
 
   # End log
   sink(NULL)

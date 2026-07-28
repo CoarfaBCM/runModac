@@ -48,10 +48,10 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
     
     if(any(inputdf == 0, na.rm = T)) {
       if (!(is.null(replaceZeros))) {
-        print(cat("##### Replacing", sum(inputdf == 0),"zeros with", replaceZeros, "#####\n"))
-        inputdf[inputdf == 0] <- replaceZeros
+        print(cat("##### Replacing", sum(inputdf == 0, na.rm = TRUE),"zeros with", replaceZeros, "#####\n"))
+        inputdf[!is.na(inputdf) & inputdf == 0] <- replaceZeros
       } else {
-        cat("##### Data contains", sum(inputdf == 0),"Zeros and replaceZeros = NULL hence keeping all Zeros as is. #####\n")
+        cat("##### Data contains", sum(inputdf == 0, na.rm = TRUE),"Zeros and replaceZeros = NULL hence keeping all Zeros as is. #####\n")
       }
     }
     
