@@ -9,6 +9,15 @@
 #   detectIstdGroups(row1, row2)                  -> data.frame of ISTD groups
 #   splitLipidomics(inputFile, outDir, ...)       -> writes workbooks, returns groups
 #   writeNormSettings(groups, outDir, ...)        -> writes runModac settings files
+#   prepLipidomics(inputFile, splitDir, ...)      -> both writers in one call
+#
+# The writer functions take a 'methods' argument - "istd", "iqr", or both (the
+# default) - so a project can prepare the input workbook and settings file for
+# either normalization strategy on its own:
+#
+#   prepLipidomics(f, splitDir, settingsDir)                      # both
+#   prepLipidomics(f, splitDir, settingsDir, methods = "iqr")     # IQR only
+#   prepLipidomics(f, splitDir, settingsDir, methods = "istd")    # ISTD only
 #
 # Input layout assumed (both metadata rows required):
 #   row 1  = ISTD roster: for every lipid column, the name of the ISTD used for
@@ -44,6 +53,19 @@ cleanName <- function(x, maxLen = 31) {
   x <- gsub("_+", "_", x)
   x <- gsub("^_|_$", "", x)
   substr(x, 1, maxLen)
+}
+
+# Validate the 'methods' argument shared by the writer functions.
+# Accepts "istd", "iqr", or both (case-insensitive); errors on anything else.
+checkMethods <- function(methods) {
+  methods <- unique(tolower(as.character(methods)))
+  if (!length(methods)) stop("At least one method must be requested ('istd' and/or 'iqr').")
+  bad <- setdiff(methods, c("istd", "iqr"))
+  if (length(bad)) {
+    stop("Unknown method(s): ", paste(bad, collapse = ", "),
+         ". Choose 'istd', 'iqr', or both.")
+  }
+  methods
 }
 
 
@@ -156,23 +178,30 @@ detectIstdGroups <- function(row1, row2) {
 #
 # inputFile      : path to the source .xlsx
 # outDir         : directory for the output workbook(s) (created if absent)
-# writeIstd      : write the workbook that keeps each group's ISTD column (last)
-# writeIqr       : write the companion workbook with the ISTD column dropped
-# istdSuffix,
-# iqrSuffix      : filename suffixes for the two workbooks
+# methods        : which workbook(s) to write -
+#                    "istd" keeps each group's ISTD column (written last)
+#                    "iqr"  drops the ISTD column
+#                  default c("istd", "iqr") writes both
+# istdFile,
+# iqrFile        : output filenames for the two workbooks
 # stripDatePrefix: remove a leading date prefix (e.g. "4-13-26-26-") from sample names
 # sheet          : sheet index or name to read from inputFile
 #
 # returns (invisibly) the group table from detectIstdGroups(), with an added
-# 'sheet_name' column giving the sheet each group was written to.
+# 'sheet_name' column giving the sheet each group was written to. The table is
+# returned regardless of which workbooks were requested, so writeNormSettings()
+# can always consume it.
 splitLipidomics <- function(inputFile,
                             outDir,
-                            writeIstd = TRUE,
-                            writeIqr = TRUE,
-                            istdSuffix = "output_lipidomics_split-ISTD.xlsx",
-                            iqrSuffix = "output_lipidomics_split-IQR.xlsx",
+                            methods = c("istd", "iqr"),
+                            istdFile = "output_lipidomics_split-ISTD.xlsx",
+                            iqrFile = "output_lipidomics_split-IQR.xlsx",
                             stripDatePrefix = TRUE,
                             sheet = 1) {
+
+  methods   <- checkMethods(methods)
+  writeIstd <- "istd" %in% methods
+  writeIqr  <- "iqr"  %in% methods
 
   if (!requireNamespace("openxlsx", quietly = TRUE)) {
     stop("Package 'openxlsx' is required.")
@@ -250,12 +279,12 @@ splitLipidomics <- function(inputFile,
   }
 
   if (writeIstd) {
-    p <- file.path(outDir, istdSuffix)
+    p <- file.path(outDir, istdFile)
     openxlsx::saveWorkbook(wbIstd, p, overwrite = TRUE)
     message("Wrote ", p)
   }
   if (writeIqr) {
-    p <- file.path(outDir, iqrSuffix)
+    p <- file.path(outDir, iqrFile)
     openxlsx::saveWorkbook(wbIqr, p, overwrite = TRUE)
     message("Wrote ", p)
   }
@@ -274,15 +303,18 @@ splitLipidomics <- function(inputFile,
 #
 # groups   : the table returned by splitLipidomics()
 # outDir   : directory for the settings workbooks (created if absent)
+# methods  : which settings file(s) to write - "istd", "iqr", or both (default)
 # cvCutoff : value for 'cv_cutoff_internal_standard' in the ISTD settings
 writeNormSettings <- function(groups,
                               outDir,
+                              methods = c("istd", "iqr"),
                               cvCutoff = 2,
                               istdFile = "settings-ISTD.xlsx",
                               iqrFile = "settings-IQR.xlsx",
                               inputSpace = "linear",
                               diffSpace = "log2") {
 
+  methods <- checkMethods(methods)
   if (!requireNamespace("openxlsx", quietly = TRUE)) {
     stop("Package 'openxlsx' is required.")
   }
@@ -318,20 +350,63 @@ writeNormSettings <- function(groups,
     message("Wrote ", path)
   }
 
+  written <- list()
+
   # IQR: settings block only.
-  iqr <- rbind(base("iqr", NA),
-               data.frame(key = "tab", value = "ISTD_column", stringsAsFactors = FALSE))
-  writeOne(iqr, file.path(outDir, iqrFile))
+  if ("iqr" %in% methods) {
+    iqr <- rbind(base("iqr", NA),
+                 data.frame(key = "tab", value = "ISTD_column", stringsAsFactors = FALSE))
+    writeOne(iqr, file.path(outDir, iqrFile))
+    written$iqr <- file.path(outDir, iqrFile)
+  }
 
   # ISTD: settings block plus one row per sheet giving its ISTD column position.
-  keep <- groups$n_lipids >= 1
-  istd <- rbind(base("istd", cvCutoff),
-                data.frame(key = "tab", value = "ISTD_column", stringsAsFactors = FALSE),
-                data.frame(key   = groups$sheet_name[keep],
-                           value = as.character(groups$n_lipids[keep] + 2L),
-                           stringsAsFactors = FALSE))
-  writeOne(istd, file.path(outDir, istdFile))
+  if ("istd" %in% methods) {
+    if (is.null(groups$sheet_name)) {
+      stop("'groups' has no 'sheet_name' column - pass the table returned by splitLipidomics().")
+    }
+    keep <- groups$n_lipids >= 1
+    istd <- rbind(base("istd", cvCutoff),
+                  data.frame(key = "tab", value = "ISTD_column", stringsAsFactors = FALSE),
+                  data.frame(key   = groups$sheet_name[keep],
+                             value = as.character(groups$n_lipids[keep] + 2L),
+                             stringsAsFactors = FALSE))
+    writeOne(istd, file.path(outDir, istdFile))
+    written$istd <- file.path(outDir, istdFile)
+  }
 
-  invisible(list(istd = file.path(outDir, istdFile),
-                 iqr  = file.path(outDir, iqrFile)))
+  invisible(written)
+}
+
+
+# ---- one-call convenience wrapper -------------------------------------------
+
+# Split the export and write the matching settings file(s) in one call, so the
+# requested methods stay in sync between the two steps.
+#
+# inputFile   : path to the source .xlsx
+# splitDir    : directory for the split workbook(s)
+# settingsDir : directory for the settings file(s) (defaults to splitDir)
+# methods     : "istd", "iqr", or both (default)
+#
+# returns (invisibly) the group table from splitLipidomics().
+prepLipidomics <- function(inputFile,
+                           splitDir,
+                           settingsDir = splitDir,
+                           methods = c("istd", "iqr"),
+                           cvCutoff = 2,
+                           stripDatePrefix = TRUE,
+                           sheet = 1) {
+
+  methods <- checkMethods(methods)
+  groups <- splitLipidomics(inputFile = inputFile,
+                            outDir = splitDir,
+                            methods = methods,
+                            stripDatePrefix = stripDatePrefix,
+                            sheet = sheet)
+  writeNormSettings(groups = groups,
+                    outDir = settingsDir,
+                    methods = methods,
+                    cvCutoff = cvCutoff)
+  invisible(groups)
 }
