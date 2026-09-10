@@ -184,22 +184,18 @@ detectIstdGroups <- function(row1, row2) {
 #                  default c("istd", "iqr") writes both
 # istdFile,
 # iqrFile        : output filenames for the two workbooks
-# stripDatePrefix: remove a leading date prefix (e.g. "4-13-26-26-") from sample names
-# cleanSampleNames: replace every character other than a letter, digit or '_' in
-#                  the sample names with '_'. FALSE by default, because runModac
-#                  carries sample names as row names and reads with
-#                  check.names = FALSE, so names written in column 1 reach the
-#                  analysis verbatim - hyphens, spaces and punctuation included.
-#                  Set it TRUE only when a project's existing settings files
-#                  already use the underscored form and must keep matching.
-#                  The substitution is lossy ('WT-1' and 'WT.1' both become
-#                  'WT_1'), so names that collide raise an error instead of
-#                  being silently duplicated.
 # sheet          : sheet index or name to read from inputFile
 #
-# Sample names are written exactly as they will be needed in the comparison
-# sheet of the runModac settings file - that match is an exact string
-# comparison, and a mismatch drops samples silently.
+# Sample names are copied verbatim from column 1 - this function does not
+# rewrite them. runModac carries sample names as row names and reads with
+# check.names = FALSE, so whatever is in column 1 reaches the analysis as
+# written, hyphens, spaces and punctuation included. Two consequences:
+#   - the comparison sheet of the settings file must spell the samples exactly
+#     as column 1 does; that match is an exact string comparison and a mismatch
+#     drops those samples silently;
+#   - if you want shorter or tidier labels (e.g. dropping an acquisition-date
+#     prefix that is identical on every sample), edit them in the source file.
+#     Doing it there keeps one source of truth and leaves the change visible.
 #
 # returns (invisibly) the group table from detectIstdGroups(), with an added
 # 'sheet_name' column giving the sheet each group was written to. The table is
@@ -210,8 +206,6 @@ splitLipidomics <- function(inputFile,
                             methods = c("istd", "iqr"),
                             istdFile = "output_classes_split-ISTD.xlsx",
                             iqrFile = "output_classes_split-IQR.xlsx",
-                            stripDatePrefix = TRUE,
-                            cleanSampleNames = FALSE,
                             sheet = 1) {
 
   methods   <- checkMethods(methods)
@@ -257,27 +251,19 @@ splitLipidomics <- function(inputFile,
     groups$sheet_name <- substr(groups$sheet_name, 1, 31)
   }
 
-  # Sample names: strip a leading date prefix, and optionally make them R-safe.
+  # Sample names are used as written. runModac keys samples by name, so a
+  # repeated or missing name would fail there instead - catch it here, where the
+  # offending file is obvious.
   samples <- as.character(dat[[1]])
-  if (stripDatePrefix) samples <- gsub("^\\d+-\\d+-\\d+-\\d+-", "", samples)
-  if (cleanSampleNames) {
-    cleaned <- cleanName(samples, maxLen = 1000L)
-    # Cleaning is lossy, so it can map two distinct samples onto one name.
-    # Duplicated names would surface much later as a confusing row-names error.
-    if (anyDuplicated(cleaned)) {
-      bad <- unique(cleaned[duplicated(cleaned)])
-      collided <- vapply(bad, function(k) paste(samples[cleaned == k], collapse = " / "),
-                         character(1))
-      stop("cleanSampleNames collapsed distinct sample names onto the same value:\n",
-           paste0("  ", bad, "  <-  ", collided, collapse = "\n"),
-           "\nRename the samples, or use cleanSampleNames = FALSE.")
-    }
-    samples <- cleaned
-  }
   if (anyDuplicated(samples)) {
     stop("Duplicate sample names in column 1: ",
          paste(unique(samples[duplicated(samples)]), collapse = ", "),
          ". Sample names must be unique.")
+  }
+  if (any(is.na(samples) | !nzchar(trimws(samples)))) {
+    stop("Blank or missing sample name in column 1, row(s) ",
+         paste(which(is.na(samples) | !nzchar(trimws(samples))) + 2L, collapse = ", "),
+         " of the input sheet.")
   }
 
   wbIstd <- if (writeIstd) openxlsx::createWorkbook() else NULL
@@ -431,8 +417,6 @@ prepLipidomics <- function(inputFile,
                            settingsDir = splitDir,
                            methods = c("istd", "iqr"),
                            cvCutoff = 2,
-                           stripDatePrefix = TRUE,
-                           cleanSampleNames = FALSE,
                            sheet = 1,
                            splitIstdFile = "output_classes_split-ISTD.xlsx",
                            splitIqrFile = "output_classes_split-IQR.xlsx",
@@ -445,8 +429,6 @@ prepLipidomics <- function(inputFile,
                             methods = methods,
                             istdFile = splitIstdFile,
                             iqrFile = splitIqrFile,
-                            stripDatePrefix = stripDatePrefix,
-                            cleanSampleNames = cleanSampleNames,
                             sheet = sheet)
   writeNormSettings(groups = groups,
                     outDir = settingsDir,
