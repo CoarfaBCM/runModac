@@ -142,7 +142,7 @@ preProcess <- function(inputFile, comparisonsFile, outdir, scriptPath, samplesAr
       if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
         all.exprs.norm[[i]] <- inputdf
       } else {
-        temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]))
+        temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]), check.names = F)
         
         mar.def <- par()$mar
         
