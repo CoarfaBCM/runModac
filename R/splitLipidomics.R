@@ -194,8 +194,8 @@ detectIstdGroups <- function(row1, row2) {
 splitLipidomics <- function(inputFile,
                             outDir,
                             methods = c("istd", "iqr"),
-                            istdFile = "output_lipidomics_split-ISTD.xlsx",
-                            iqrFile = "output_lipidomics_split-IQR.xlsx",
+                            istdFile = "output_classes_split-ISTD.xlsx",
+                            iqrFile = "output_classes_split-IQR.xlsx",
                             stripDatePrefix = TRUE,
                             sheet = 1) {
 
@@ -389,6 +389,9 @@ writeNormSettings <- function(groups,
 # settingsDir : directory for the settings file(s) (defaults to splitDir)
 # methods     : "istd", "iqr", or both (default)
 #
+# The four *File arguments override the output filenames, for projects that name
+# their inputs per request. Defaults match the underlying writers.
+#
 # returns (invisibly) the group table from splitLipidomics().
 prepLipidomics <- function(inputFile,
                            splitDir,
@@ -396,17 +399,25 @@ prepLipidomics <- function(inputFile,
                            methods = c("istd", "iqr"),
                            cvCutoff = 2,
                            stripDatePrefix = TRUE,
-                           sheet = 1) {
+                           sheet = 1,
+                           splitIstdFile = "output_classes_split-ISTD.xlsx",
+                           splitIqrFile = "output_classes_split-IQR.xlsx",
+                           settingsIstdFile = "settings-ISTD.xlsx",
+                           settingsIqrFile = "settings-IQR.xlsx") {
 
   methods <- checkMethods(methods)
   groups <- splitLipidomics(inputFile = inputFile,
                             outDir = splitDir,
                             methods = methods,
+                            istdFile = splitIstdFile,
+                            iqrFile = splitIqrFile,
                             stripDatePrefix = stripDatePrefix,
                             sheet = sheet)
   writeNormSettings(groups = groups,
                     outDir = settingsDir,
                     methods = methods,
-                    cvCutoff = cvCutoff)
+                    cvCutoff = cvCutoff,
+                    istdFile = settingsIstdFile,
+                    iqrFile = settingsIqrFile)
   invisible(groups)
 }
