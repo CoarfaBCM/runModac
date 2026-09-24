@@ -372,6 +372,40 @@ runModac <- function(inputFile,
           myctrl_group <- NULL
         }
 
+        # Optional per-comparison display-order override for heatmaps and boxplots only.
+        # Does NOT affect Test/Control designation, the statistical computation, or PCA plots.
+        mygroups_display <- mygroups
+        if ("GroupOrder" %in% colnames(comparisons_df)) {
+          go_raw <- as.character(comparisons_df$GroupOrder[i])
+          if (!is.na(go_raw) && nzchar(trimws(go_raw))) {
+            go_parts <- trimws(strsplit(go_raw, ",")[[1]])
+            go_parts <- go_parts[nzchar(go_parts)]
+
+            if (any(duplicated(go_parts))) {
+              stop(paste0("Comparison '", mycomparison, "': GroupOrder contains duplicate group name(s): ",
+                          paste(unique(go_parts[duplicated(go_parts)]), collapse = ", ")))
+            }
+
+            missing_groups <- setdiff(mygroups, go_parts)
+            extra_groups   <- setdiff(go_parts, mygroups)
+
+            if (length(extra_groups) > 0) {
+              warning(paste0("Comparison '", mycomparison, "': GroupOrder lists group(s) not used in ",
+                             "this comparison; ignoring: ", paste(extra_groups, collapse = ", ")))
+              go_parts <- go_parts[go_parts %in% mygroups]
+            }
+
+            if (length(missing_groups) > 0) {
+              stop(paste0("Comparison '", mycomparison, "': GroupOrder is missing group(s) that are ",
+                          "part of this comparison: ", paste(missing_groups, collapse = ", "),
+                          ". GroupOrder must list every group involved (Control+Test for t-test/limma, ",
+                          "or every level of GroupingVariable for anova/limma-full), just reordered."))
+            }
+
+            mygroups_display <- go_parts
+          }
+        }
+
         print(cat("##### Performing", mytest, "for comparison:", mycomparison, "#####\n"))
 
         # Build metadata from samples sheet
@@ -486,8 +520,8 @@ runModac <- function(inputFile,
                    test = mytest,
                    request.type = type,
                    comparison = mycomparison_full,
-                   group.ctrl.test = mygroups,
-                   group.colors = col_list$group[mygroups],
+                   group.ctrl.test = mygroups_display,
+                   group.colors = col_list$group[mygroups_display],
                    diff.space = differential_analysis_space,
                    compute.log2fc = compute_log2fc,
                    samplesAreRows = T,
@@ -577,8 +611,8 @@ runModac <- function(inputFile,
                     test = mytest,
                     comparison = mycomparison_full,
                     outdir = paste0(outdir, "/heatmaps/"),
-                    groupOrder = mygroups,
-                    groupColors = col_list$group[mygroups],
+                    groupOrder = mygroups_display,
+                    groupColors = col_list$group[mygroups_display],
                     heatmapColorScale = heatmap_color_scale,
                     reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison_full,".xlsx"),
                     cutoffStat = padj_method,
@@ -589,8 +623,8 @@ runModac <- function(inputFile,
                     test = mytest,
                     comparison = mycomparison_full,
                     outdir = paste0(outdir, "/heatmaps/"),
-                    groupOrder = mygroups,
-                    groupColors = col_list$group[mygroups],
+                    groupOrder = mygroups_display,
+                    groupColors = col_list$group[mygroups_display],
                     heatmapColorScale = heatmap_color_scale,
                     reportfile = paste0(outdir,"/report/Report_",mytest,"_",mycomparison_full,".xlsx"),
                     cutoffStat = padj_method,

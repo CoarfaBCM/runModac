@@ -89,7 +89,6 @@ plotHeatmap <- function(exprs,
     # }
     col_heatmap <- colorRamp2(c((-scale)*.75, 0,(scale)*.75), heatmapColorScale)
     col_list <- list(group=groupColors)
-    names(col_list$group) <- groupOrder
     
     ha1 <- HeatmapAnnotation(df = meta, show_annotation_name = T, annotation_height = .25,
                             col = col_list)
