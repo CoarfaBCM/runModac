@@ -6,3 +6,6 @@
 .Ruserdata
 scratch*
 scratch/
+
+# regenerated example outputs
+examples/results-*/
