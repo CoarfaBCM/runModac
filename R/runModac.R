@@ -63,8 +63,24 @@
 #                         type = "rppa" (passed to rppaAggr).
 #                         Default: 2
 #
+# max_missing_frac        Numeric in (0, 1]. Missingness filter, applied per comparison:
+#                         a feature is dropped if more than this fraction of its values
+#                         are missing in ANY of that comparison's groups. 1 = no
+#                         fractional dropping (a fraction can never exceed 1).
+#                         Example: 0.7 drops features that are >70% missing in any group.
+#                         Independently of this value, a feature is ALWAYS dropped if it
+#                         has fewer than 2 non-missing values in any group (this is what
+#                         keeps t.test / aov / limma from failing on a near-empty group).
+#                         The filter runs on the normalized data; raw-data PCA keeps all
+#                         features. Dropped features are listed with the reason and
+#                         per-group counts in report/DroppedFeatures.xlsx (one sheet per
+#                         comparison).
+#                         Default: 1
+#
 # min_signal              Numeric or NULL. Features with max signal below this threshold
-#                         are dropped before analysis. NULL = no filtering.
+#                         (raw data, per comparison) are dropped before analysis. NULL =
+#                         no filtering. Dropped features are listed in
+#                         report/DroppedFeatures.xlsx.
 #                         Default: NULL
 #
 # replaceNA               Numeric or NULL. Value to substitute for NA entries in the
@@ -158,6 +174,7 @@ runModac <- function(inputFile,
                      scriptPath,
                      samplesAreRows = TRUE,
                      sampleIDRow = 2,
+                     max_missing_frac = 1,
                      min_signal = NULL,
                      replaceNA = NULL,
                      replaceZeros = NULL,
@@ -211,7 +228,7 @@ runModac <- function(inputFile,
     options(repos = c(CRAN = "https://cran.r-project.org"))
 
     # installing required packages
-    list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","foreach","doParallel")
+    list.of.packages <- c("ggplot2", "readxl", "openxlsx","tidyr","dplyr","foreach","doParallel")
     lapply(list.of.packages, install_pkg)
 
     # installing complex heatmap
@@ -253,8 +270,8 @@ runModac <- function(inputFile,
                             cv_cutoff_internal_standard = cv_cutoff_internal_standard,
                             ISTD_columns = ISTD_columns,
                             samplesAreRows = FALSE,
-                            replaceNA = NULL,
-                            replaceZeros = NULL)
+                            replaceNA = replaceNA,
+                            replaceZeros = replaceZeros)
     } else {
       exprsdf <- preProcess(inputFile = inputFile,
                             outdir = outdir,
@@ -266,8 +283,8 @@ runModac <- function(inputFile,
                             cv_cutoff_internal_standard = cv_cutoff_internal_standard,
                             ISTD_columns = ISTD_columns,
                             samplesAreRows = samplesAreRows,
-                            replaceNA = NULL,
-                            replaceZeros = NULL)
+                            replaceNA = replaceNA,
+                            replaceZeros = replaceZeros)
     }
     print(cat("##### Preprocessing complete #####\n\n"))
 
@@ -346,6 +363,9 @@ runModac <- function(inputFile,
 
       source(paste0(scriptPath,"/myStatTest.R"))
       source(paste0(scriptPath,"/plotPCA.R"))
+
+      # collect per-comparison dropped-feature reports (written to one workbook after the loop)
+      dropped_reports <- list()
 
 
 ###Begin loop through comparisons -------------------------------------------
@@ -434,13 +454,33 @@ runModac <- function(inputFile,
         myexprs.raw  <- exprsdf[["raw"]][commonsamples, , drop=F]
         myexprs.norm <- exprsdf[["norm"]][commonsamples, , drop=F]
 
+        # filtering out features for which none of the samples in this comparison have signal > min_signal
+        min_signal_report <- NULL
+        if (!(is.null(min_signal))) {
+          print(cat("##### Filtering out features by min_signal cutoff =", min_signal,"#####\n"))
+          if (min_signal == 0) {
+            keep <- apply(myexprs.raw,2,function(x){any(x>min_signal, na.rm = TRUE)})
+          } else {
+            keep <- apply(myexprs.raw,2,function(x){any(x>=min_signal, na.rm = TRUE)})
+          }
+          print(cat("##### Dropping", length(keep)-sum(keep),"out of the", length(keep)," total features #####\n"))
+          dropped_ms <- colnames(myexprs.raw)[!keep]
+          if (length(dropped_ms) > 0) {
+            min_signal_report <- data.frame(feature = dropped_ms,
+                                            reason  = paste0("max signal < min_signal (", min_signal, ")"),
+                                            row.names = NULL, check.names = F)
+          }
+          myexprs.raw  <- myexprs.raw[,keep,drop=F]
+          myexprs.norm <- myexprs.norm[,keep,drop=F]
+        }
+
         dropZeroVarArrays <- function(inputdf, checkRows = F, checkCols = T){
           if (checkCols) {
             flag <- colSums(inputdf, na.rm = T) == 0 | colSums(!is.na(inputdf)) == 0
             if (any(flag, na.rm = T)) {
               print(cat("##### Dropping features with no expression or missing values across all samples for this comparison #####\n"))
-              print(cat("##### Number of features dropped:", length(flag), "#####\n"))
-              print(cat("##### Exact features dropped:", colnames(inputdf)[!flag], "#####\n"))
+              print(cat("##### Number of features dropped:", sum(flag), "#####\n"))
+              print(cat("##### Exact features dropped:", colnames(inputdf)[flag], "#####\n"))
               inputdf <- inputdf[,!flag, drop=F]
             }
           }
@@ -449,8 +489,8 @@ runModac <- function(inputFile,
             flag <- rowSums(inputdf, na.rm = T) == 0 | rowSums(!is.na(inputdf)) == 0
             if (any(flag, na.rm = T)) {
               print(cat("##### Dropping samples with no expression or missing values across all features for this comparison #####\n"))
-              print(cat("##### Number of samples dropped:", length(flag), "#####\n"))
-              print(cat("##### Exact samples dropped:", rownames(inputdf)[!flag], "#####\n"))
+              print(cat("##### Number of samples dropped:", sum(flag), "#####\n"))
+              print(cat("##### Exact samples dropped:", rownames(inputdf)[flag], "#####\n"))
               inputdf <- inputdf[!flag, , drop=F]
             }
           }
@@ -460,6 +500,53 @@ runModac <- function(inputFile,
 
         myexprs.raw  <- dropZeroVarArrays(myexprs.raw,  checkRows = T, checkCols = F)
         myexprs.norm <- dropZeroVarArrays(myexprs.norm, checkRows = T, checkCols = F)
+
+        # Drop features too sparse within any comparison group:
+        #  - missing fraction strictly greater than 'threshold' (the `max_missing_frac` arg) in any group, OR
+        #  - fewer than 'minNonMissing' non-missing samples in any group (always enforced, even when
+        #    max_missing_frac = 1) -- this is what keeps t.test/aov/limma from failing on a near-empty group.
+        dropByMissingness <- function(exprs, meta, groups, threshold, minNonMissing = 2){
+          drop   <- rep(FALSE, ncol(exprs))
+          reason <- rep(NA_character_, ncol(exprs))
+          miss.by.group <- list()
+          nok.by.group  <- list()
+          for (g in groups) {
+            samps <- intersect(rownames(meta)[meta[,1] == g], rownames(exprs))
+            sub   <- exprs[samps, , drop = F]
+            miss  <- colMeans(is.na(sub))    # fraction missing per feature in this group
+            nok   <- colSums(!is.na(sub))     # non-missing count per feature in this group
+            miss.by.group[[g]] <- miss
+            nok.by.group[[g]]  <- nok
+            fail  <- (miss > threshold) | (nok < minNonMissing)
+            new   <- fail & is.na(reason)     # keep the first (most upstream) failing reason
+            reason[new] <- ifelse(nok[new] < minNonMissing,
+                                  paste0("<", minNonMissing, " non-missing in group '", g, "'"),
+                                  paste0(">", round(threshold*100), "% missing in group '", g, "'"))
+            drop  <- drop | fail
+          }
+          report <- NULL
+          if (any(drop)) {
+            report <- data.frame(feature = colnames(exprs)[drop],
+                                 reason  = reason[drop],
+                                 row.names = NULL, check.names = F)
+            for (g in groups) {
+              report[[paste0("missing_frac_", g)]] <- round(miss.by.group[[g]][drop], 3)
+              report[[paste0("n_nonmissing_", g)]] <- nok.by.group[[g]][drop]
+            }
+            print(cat("##### Missingness filter: dropping", sum(drop), "features for this comparison (threshold =", threshold, ", min non-missing per group =", minNonMissing, ") #####\n"))
+            print(cat("##### Exact features dropped:", colnames(exprs)[drop], "#####\n"))
+          }
+          return(list(keep = !drop, report = report))
+        }
+
+        # Apply the per-group missingness filter on the normalized (analysis) matrix.
+        # Raw-data PCA keeps all features.
+        missfilt <- dropByMissingness(myexprs.norm, mymeta, mygroups, threshold = max_missing_frac)
+        myexprs.norm <- myexprs.norm[, missfilt$keep, drop = F]
+        comp_dropped <- NULL
+        if (!is.null(min_signal_report) || !is.null(missfilt$report)) {
+          comp_dropped <- bind_rows(min_signal_report, missfilt$report)
+        }
 
         # Extract pair IDs for paired testing (NULL when Pairing column is absent or empty)
         mypair_col <- NULL
@@ -514,6 +601,7 @@ runModac <- function(inputFile,
         }
 
         all.comparison.labels <- c(all.comparison.labels, mycomparison_full)
+        if (!is.null(comp_dropped)) dropped_reports[[mycomparison_full]] <- comp_dropped
 
         myStatTest(exprs = myexprs.norm,
                    meta = mymeta,
@@ -630,6 +718,17 @@ runModac <- function(inputFile,
                     cutoffStat = padj_method,
                     cutoff = 1,
                     samplesAreRows = T)
+      }
+
+      # Write one workbook with a sheet per comparison listing features dropped by the
+      # min_signal / missingness filters. Sheet names are cut to 28 chars before
+      # make.unique() so the suffix it adds can never push a name past Excel's 31-char limit.
+      if (length(dropped_reports) > 0) {
+        names(dropped_reports) <- make.unique(substr(gsub("[^A-Za-z0-9_. -]", "_", names(dropped_reports)), 1, 28), sep = "_")
+        write.xlsx(dropped_reports,
+                   paste0(outdir, "/report/DroppedFeatures.xlsx"),
+                   rowNames = F, overwrite = T)
+        print(cat("##### Dropped-feature report written to report/DroppedFeatures.xlsx #####\n"))
       }
 
       source(paste0(scriptPath,"/createPptx.R"))
