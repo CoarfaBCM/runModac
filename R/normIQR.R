@@ -15,9 +15,9 @@ normIQR <- function(inputdf, input_space, diff_space, qc_row = NA) {
     inputdf <- 2^inputdf
   }
 
-  all.medians <- unname(apply(inputdf,1,median))
-  all.upper.quartile <- unname(apply(inputdf,1,function(x){quantile(x, 0.75)}))
-  all.lower.quartile <- unname(apply(inputdf,1,function(x){quantile(x, 0.25)}))
+  all.medians <- unname(apply(inputdf,1,median, na.rm = TRUE))
+  all.upper.quartile <- unname(apply(inputdf,1,function(x){quantile(x, 0.75, na.rm = TRUE)}))
+  all.lower.quartile <- unname(apply(inputdf,1,function(x){quantile(x, 0.25, na.rm = TRUE)}))
   newdf <- data.frame(t(sapply(1:nrow(inputdf),function(x){
     sapply(1:ncol(inputdf),function(y){
       inputdf[x,y] <- (inputdf[x,y] - all.medians[x])/(all.upper.quartile[x] - all.lower.quartile[x])

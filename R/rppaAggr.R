@@ -167,7 +167,7 @@ rppaAggr <- function(inputFile,
     cvdf <- cvdf[unique(mygroups[,sampleIDRow]),]
     
     if (!(is.null(replace.cvcutoff)) & !(is.null(cv_cutoff))) {
-      newdf[cvdf > cv_cutoff] <- replace.cvcutoff
+      newdf[!is.na(cvdf) & cvdf > cv_cutoff] <- replace.cvcutoff
     }
     
     finaldf <- data.frame(AB_ID = as.numeric(mydf[,1]), AB_name = colnames(newdf), AB_species = AB_species, GeneSymbol = mydf[,3], t(newdf), check.rows = F, check.names = F)

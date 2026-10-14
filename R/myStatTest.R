@@ -66,7 +66,7 @@ myStatTest <- function(exprs,
                1)
       })
     } else {
-      all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
+      all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x, na.rm = T) > 0,
                                                        t.test(x~meta[,1])$p.value,
                                                        1)})
     }
@@ -112,7 +112,7 @@ myStatTest <- function(exprs,
                paste0(outdir,"FullReport_",test,"_",comparison,".xlsx"),
                rowNames = F, overwrite = T)
   } else if (test == "anova") {
-    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x) > 0,
+    all.pvals <- apply(exprs, 2, function(x) {ifelse(var(x, na.rm = T) > 0,
                                                      summary(aov(x~meta[,1]))[[1]][["Pr(>F)"]][1],
                                                      1)}) # ANOVA test across study sites for each chemical
     all.fdr <- p.adjust(all.pvals, method = "BH") # FDR correction

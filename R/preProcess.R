@@ -55,10 +55,10 @@ preProcess <- function(inputFile,
 
     if(any(inputdf == 0, na.rm = T)) {
       if (!(is.null(replaceZeros))) {
-        print(cat("##### Replacing", sum(inputdf == 0),"zeros with", replaceZeros, "#####\n"))
-        inputdf[inputdf == 0] <- replaceZeros
+        print(cat("##### Replacing", sum(inputdf == 0, na.rm = TRUE),"zeros with", replaceZeros, "#####\n"))
+        inputdf[!is.na(inputdf) & inputdf == 0] <- replaceZeros
       } else {
-        cat("##### Data contains", sum(inputdf == 0),"Zeros and replaceZeros = NULL hence keeping all Zeros as is. #####\n")
+        cat("##### Data contains", sum(inputdf == 0, na.rm = TRUE),"Zeros and replaceZeros = NULL hence keeping all Zeros as is. #####\n")
       }
     }
 
@@ -126,7 +126,7 @@ preProcess <- function(inputFile,
       if (is.na(qc.idx) | qc.idx > nrow(inputdf)) {
         all.exprs.norm[[i]] <- inputdf
       } else {
-        temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]))
+        temp <- data.frame(feature=colnames(inputdf),t(inputdf[qc.idx:nrow(inputdf),]), check.names = F)
 
         mar.def <- par()$mar
 
